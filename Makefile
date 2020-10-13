@@ -82,7 +82,7 @@ dist: clean ## builds source and wheel package
 	ls -l dist
 
 dev: ## install dependencies and setup dev machine
-	pip install -r requirements/dev.txt
+	python3 -m pip install -r requirements/dev.txt
 	pre-commit install
 
 install: clean ## install the package to the active Python's site-packages

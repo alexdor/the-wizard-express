@@ -1,5 +1,6 @@
 """Console script for the_wizard_express."""
 import sys
+
 import click
 
 

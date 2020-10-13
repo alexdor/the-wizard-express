@@ -1,4 +1,4 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC
 
 from ..reader import Reader
 from ..retriever import Retriever

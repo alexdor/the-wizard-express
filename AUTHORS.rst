@@ -5,7 +5,9 @@ Credits
 Development Lead
 ----------------
 
-* Alexandros Dorodoulis, Amalia Matei, Jesper Lund Petersen <audreyr@example.com>
+* Alexandros Dorodoulis
+* Amalia Matei
+* Jesper Lund Petersen
 
 Contributors
 ------------

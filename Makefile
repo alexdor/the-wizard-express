@@ -87,3 +87,6 @@ dev: ## install dependencies and setup dev machine
 
 install: clean ## install the package to the active Python's site-packages
 	python setup
+
+run: 
+	python example.py

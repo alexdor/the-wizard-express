@@ -13,6 +13,7 @@ import torch
 import time
 import datetime
 import json
+import os
 
 # Set the seed value all over the place to make this reproducible.
 seed_val = 10
@@ -21,7 +22,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 
-pretrainedModel = "prajjwal1/bert-tiny"
+pretrainedModelName = "prajjwal1/bert-tiny"
 
 # Training and validation loss, validation accuracy, and timings.
 training_stats = []
@@ -32,14 +33,15 @@ total_t0 = time.time()
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-tokenizer = AutoTokenizer.from_pretrained(pretrainedModel)
-training_dataset = QADataset(initializeNQDataset("../xx00.jsonl", tokenizer))
-validation_dataset = QADataset(initializeNQDataset("../xx01.jsonl", tokenizer))
+tokenizer = AutoTokenizer.from_pretrained(pretrainedModelName)
+training_dataloader = QADataset(os.path.realpath("../training/"), tokenizer)
+validation_dataloader = QADataset(os.path.realpath("../validation/"), tokenizer)
 
-training_dataloader = DataLoader(training_dataset, num_workers=1, batch_size=1)
-validation_dataloader = DataLoader(validation_dataset, num_workers=1, batch_size=1)
 
-readerModel = BertForQuestionAnswering.from_pretrained(pretrainedModel)
+# training_dataloader = DataLoader(QADataset(initializeNQDataset(os.path.realpath("../training/xx-1-training.jsonl"), tokenizer)), num_workers=1, batch_size=1)
+# validation_dataloader = DataLoader(QADataset(initializeNQDataset(os.path.realpath("../validation/xx-1-validation.jsonl"), tokenizer)), num_workers=1, batch_size=1)
+
+readerModel = BertForQuestionAnswering.from_pretrained(pretrainedModelName)
 
 optimizer = AdamW(readerModel.parameters(), lr=2e-5, eps=1e-8)
 
@@ -97,14 +99,14 @@ for epoch_i in range(0, epochs):
         #
         # `batch` contains three pytorch tensors:
         #   [0]: question and context inputs
-        #   [1]: question attention
+        #   [1]: attention masks
         #   [2]: start position of answer in context
         #   [3]: end position of answer in context
 
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        start_positions = batch["start_positions"].to(device)
-        end_positions = batch["end_positions"].to(device)
+        input_ids = batch[0].to(device)
+        attention_mask = batch[1].to(device)
+        start_positions = batch[2].to(device)
+        end_positions = batch[3].to(device)
 
         # Always clear any previously calculated gradients before performing a
         # backward pass. PyTorch doesn't do this automatically because

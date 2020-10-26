@@ -8,13 +8,13 @@ from itertools import islice, count
 class QADataset(torch.utils.data.Dataset):
     """Dataset"""
 
-    _BLOCK_SIZE = 50000
+    _BLOCK_SIZE = 9000
     """
     Iterable data structure for storing data in blocks on the file system.
     """
 
     def __init__(
-        self, directory, tokenizer, prefix="xx", shuffle=True, num_blocks=None
+        self, directory, tokenizer, prefix="block", shuffle=True, num_blocks=None
     ):
         self.directory = directory
         self.tokenizer = tokenizer
@@ -40,7 +40,8 @@ class QADataset(torch.utils.data.Dataset):
     def __len__(self):
         # True dataset size
         count = lambda f: (1 for _ in open(os.path.join(self.directory, f)))
-        return sum([sum(count(f)) for f in self.block_paths])
+        s = sum([sum(count(f)) for f in self.block_paths])
+        return s
 
     def __next__(self):
         # No data has been loaded yet
@@ -82,8 +83,11 @@ class QADataset(torch.utils.data.Dataset):
         )
 
     @staticmethod
-    def write(data, directory, prefix="xx"):
-        block_size = min(QADataset._BLOCK_SIZE, len(data))
+    def write(file, directory, prefix="block"):
+        block_size = QADataset._BLOCK_SIZE
+        with open(file) as data:
+            block_size = min(QADataset._BLOCK_SIZE, sum(1 for _ in data))
+        data = open(file, "r")
         if not os.path.exists(directory):
             os.makedirs(directory)
         iterable = iter(data)
@@ -95,7 +99,7 @@ class QADataset(torch.utils.data.Dataset):
                 directory, "{}-{}-{}.jsonl".format(prefix, QADataset._BLOCK_SIZE, idx)
             )
             with open(path, "w") as file:
-                [file.write("%s\n" % item) for item in block if item is not None]
+                [file.write(item) for item in block if item is not None]
 
     # # Initialize dataset
     # def __init__(self, encodings):

@@ -6,4 +6,4 @@ __version__ = "0.0.1"
 
 __all__ = ["corpus", "datasets", "language_model", "qa", "reader", "retriever"]
 
-from .datasets import initializeNQDataset, QADataset
+from .datasets import QADataset

@@ -11,5 +11,5 @@ __all__ = [
     "reader",
     "retriever",
     "cli",
-    "the_wizard_express",
+    "datasets",
 ]

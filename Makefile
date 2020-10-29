@@ -90,3 +90,7 @@ install: clean ## install the package to the active Python's site-packages
 
 run: ## execute cli
 	python3 -m the_wizard_express
+
+
+command: ## execute a specific command by passing the command argument
+	python3 -m the_wizard_express $(command)

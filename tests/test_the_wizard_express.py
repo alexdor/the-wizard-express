@@ -4,9 +4,9 @@
 
 
 import unittest
+
 from click.testing import CliRunner
 
-from the_wizard_express import the_wizard_express
 from the_wizard_express import cli
 
 

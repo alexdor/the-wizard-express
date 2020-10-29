@@ -46,4 +46,4 @@ class TriviaQA(Corpus, TrainTestDataset):
                 num_proc=Config.max_proc_to_use,
             )
 
-        return self.corpus
+        return self.corpus["context"]

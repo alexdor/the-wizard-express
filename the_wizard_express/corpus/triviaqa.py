@@ -10,7 +10,8 @@ class TriviaQA(Corpus, TrainTestDataset):
         dataset = load_dataset("trivia_qa", "rc", cache_dir=Config.cache_dir)
 
         self.dataset = dataset.filter(
-            lambda row: len(row["entity_pages"]["wiki_context"]) > 0
+            lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
+            num_proc=Config.max_proc_to_use,
         ).map(
             lambda data: {
                 "question": data["question"],
@@ -22,7 +23,6 @@ class TriviaQA(Corpus, TrainTestDataset):
                 "question_source",
                 "entity_pages",
                 "search_results",
-                "answer",
             ],
             num_proc=Config.max_proc_to_use,
         )

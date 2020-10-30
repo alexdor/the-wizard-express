@@ -5,14 +5,29 @@ from .corpus import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):
-    def __init__(self) -> None:
+    def __init__(self, percent_of_data_to_keep=0.1) -> None:
         self.corpus = None
-        dataset = load_dataset("trivia_qa", "rc", cache_dir=Config.cache_dir)
+        dataset = load_dataset(
+            "trivia_qa",
+            "rc",
+            cache_dir=Config.cache_dir,
+        )
 
-        self.dataset = dataset.filter(
+        dataset = dataset.filter(
             lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
             num_proc=Config.max_proc_to_use,
-        ).map(
+        )
+
+        def select_part(data, percent):
+            return data.select(range(round(len(data) * percent)))
+
+        dataset["train"] = select_part(dataset["train"], percent_of_data_to_keep)
+        dataset["test"] = select_part(dataset["test"], percent_of_data_to_keep)
+        dataset["validation"] = select_part(
+            dataset["validation"], percent_of_data_to_keep
+        )
+
+        self.dataset = dataset.map(
             lambda data: {
                 "question": data["question"],
                 "answer": data["answer"]["value"],
@@ -37,13 +52,15 @@ class TriviaQA(Corpus, TrainTestDataset):
                 )
             )
 
-            self.corpus = dataset.map(
+            dataset = dataset.map(
                 lambda data: {"context": data["context"]},
                 remove_columns=[
                     "question",
                     "answer",
                 ],
                 num_proc=Config.max_proc_to_use,
-            )
+            ).unique(column="context")
+            dataset.sort()
+            self.corpus = dataset
 
-        return self.corpus["context"]
+        return self.corpus

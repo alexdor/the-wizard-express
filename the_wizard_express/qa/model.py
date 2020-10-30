@@ -1,7 +1,7 @@
 from abc import ABC
 
-from ..reader import Reader
-from ..retriever import Retriever
+from ..reader.reader import Reader
+from ..retriever.retriever import Retriever
 
 
 class Model(ABC):

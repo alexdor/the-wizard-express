@@ -1,19 +1,20 @@
-from the_wizard_express import QADataset
-from torch.utils.data import RandomSampler, DataLoader
-from transformers import (
-    AutoTokenizer,
-    AutoModelForQuestionAnswering,
-    AdamW,
-    get_linear_schedule_with_warmup,
-)
-
-import random
-import numpy as np
-import torch
-import time
 import datetime
 import json
 import os
+import random
+import time
+
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, RandomSampler
+from transformers import (
+    AdamW,
+    AutoModelForQuestionAnswering,
+    AutoTokenizer,
+    get_linear_schedule_with_warmup,
+)
+
+from the_wizard_express.datasets.dataset import QADataset
 
 # Set the seed value all over the place to make this reproducible.
 seed_val = 10

@@ -1,6 +1,6 @@
 from abc import ABC, abstractclassmethod
 
-from ..corpus import Corpus
+from ..corpus.corpus import Corpus
 
 
 class Retriever(ABC):
@@ -14,5 +14,10 @@ class Retriever(ABC):
         self.corpus = corpus
 
     @abstractclassmethod
+    def retrieve_docs(self, question: str) -> str:
+        pass
+
+
+class TFIDFRetriever(Retriever):
     def retrieve_docs(self, question: str):
         pass

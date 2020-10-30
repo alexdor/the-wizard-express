@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from setuptools import find_packages, setup
 
 """The setup script."""
 try:  # for pip >= 10
@@ -6,7 +7,6 @@ try:  # for pip >= 10
 except ImportError:  # for pip <= 9.0.3
     from pip.req import parse_requirements
 
-from setuptools import find_packages, setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -23,8 +23,8 @@ parsed_test_requirements = parse_requirements(
 )
 
 
-requirements = [str(ir.req) for ir in parsed_requirements]
-test_requirements = [str(tr.req) for tr in parsed_test_requirements]
+requirements = [str(ir.requirement) for ir in parsed_requirements]
+test_requirements = [str(tr.requirement) for tr in parsed_test_requirements]
 
 setup_requirements = []
 
@@ -34,8 +34,16 @@ setup(
     author_email="",
     python_requires=">=3.5",
     classifiers=[
+        # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+        # 'Development Status :: 1 - Planning',
         "Development Status :: 2 - Pre-Alpha",
+        # 'Development Status :: 3 - Alpha',
+        # "Development Status :: 4 - Beta",
+        # 'Development Status :: 5 - Production/Stable',
+        # 'Development Status :: 6 - Mature',
+        # 'Development Status :: 7 - Inactive',
         "Intended Audience :: Developers",
+        "Environment :: Console",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",

@@ -22,7 +22,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 
-pretrainedModelName = "sshleifer/distilbart-xsum-6-6"
+pretrainedModelName = "bert-base-uncased"
 
 # Training and validation loss, validation accuracy, and timings.
 training_stats = []
@@ -34,13 +34,16 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 # Unpack the dataset - For simplified datasets, split the datasets manually
-QADataset.write(
-    os.path.realpath("../v1.0-simplified_simplified-nq-train.jsonl"),
-    os.path.realpath("../training/"),
-)
+# QADataset.write(
+#     os.path.realpath("../v1.0-simplified_simplified-nq-train.jsonl"),
+#     os.path.realpath("../training/"),
+# )
 
+# Preparing the datasets
 tokenizer = AutoTokenizer.from_pretrained(pretrainedModelName)
+print("Preparing training dataset...")
 training_dataloader = QADataset(os.path.realpath("../training/"), tokenizer)
+print("Preparing validation dataset...")
 validation_dataloader = QADataset(os.path.realpath("../validation/"), tokenizer)
 
 
@@ -48,6 +51,8 @@ validation_dataloader = QADataset(os.path.realpath("../validation/"), tokenizer)
 # validation_dataloader = DataLoader(QADataset(initializeNQDataset(os.path.realpath("../validation/xx-1-validation.jsonl"), tokenizer)), num_workers=1, batch_size=1)
 
 readerModel = AutoModelForQuestionAnswering.from_pretrained(pretrainedModelName)
+
+print(readerModel)
 
 # Note: AdamW is a class from the huggingface library (as opposed to pytorch)
 # Adam with 'Weight Decay fix', see: https://arxiv.org/pdf/1711.05101.pdf
@@ -86,7 +91,6 @@ for epoch_i in range(0, epochs):
     training_dataloader_len = len(training_dataloader)
     # For each batch of training data...
     for step, batch in enumerate(training_dataloader):
-
         # Progress update every 40 batches.
         if step % 40 == 0 and not step == 0:
             # Calculate elapsed time in minutes.
@@ -121,13 +125,9 @@ for epoch_i in range(0, epochs):
         readerModel.zero_grad()
 
         # Perform a forward pass (evaluate the model on this training batch).
-        outputs = readerModel(
-            input_ids,
-            attention_mask=attention_mask,
-            start_positions=start_positions,
-            end_positions=end_positions,
+        (loss, start_logits, end_logits) = readerModel(
+            input_ids, attention_mask=attention_mask
         )
-        loss = outputs[0]
 
         # Accumulate the training loss over all of the batches so that we can
         # calculate the average loss at the end. `loss` is a Tensor containing a
@@ -178,9 +178,20 @@ for epoch_i in range(0, epochs):
     total_eval_loss = 0
     nb_eval_steps = 0
 
+    validation_dataloader_len = len(validation_dataloader)
     # Evaluate data for one epoch
-    for batch in validation_dataloader:
+    for step, batch in validation_dataloader:
 
+        if step % 40 == 0 and not step == 0:
+            # Calculate elapsed time in minutes.
+            elapsed = str(datetime.timedelta(seconds=int(round((time.time() - t0)))))
+
+            # Report progress.
+            print(
+                "  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.".format(
+                    step, validation_dataloader_len, elapsed
+                )
+            )
         # Unpack this training batch from our dataloader.
         #
         # As we unpack the batch, we'll also copy each tensor to the GPU using
@@ -207,24 +218,29 @@ for epoch_i in range(0, epochs):
             # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
             # Get the "logits" output by the model. The "logits" are the output
             # values prior to applying an activation function like the softmax.
-            outputs = readerModel(
-                input_ids,
-                attention_mask=attention_mask,
-                start_positions=start_positions,
-                end_positions=end_positions,
+            (loss, start_logits, end_logits) = readerModel(
+                input_ids, attention_mask=attention_mask
             )
 
-        loss = outputs[0]
         # Accumulate the validation loss.
         total_eval_loss += loss.item()
 
         # Move logits and labels to CPU
-        # logits = logits.detach().cpu().numpy()
-        # label_ids = start_positions.to('cpu').numpy()
+        start_logits = start_logits.detach().cpu().numpy()
+        end_logits = end_logits.detach().cpu().numpy()
+        start_ids = start_positions.to("cpu").numpy()
+        end_ids = end_positions.to("cpu").numpy()
 
         # Calculate the accuracy for this batch of test sentences, and
         # accumulate it over all batches.
-        # TODO
+        pred_start_flat = np.argmax(start_logits, axis=1).flatten()
+        pred_end_flat = np.argmax(end_logits, axis=1).flatten()
+        start_flat = start_ids.flatten()
+        end_flat = end_ids.flatten()
+        total_eval_accuracy += np.sum(
+            pred_start_flat == start_flat and pred_end_flat == end_flat
+        ) / len(start_flat)
+
     validation_dataloader_len = len(validation_dataloader)
     # Report the final accuracy for this validation run.
     avg_val_accuracy = total_eval_accuracy / validation_dataloader_len

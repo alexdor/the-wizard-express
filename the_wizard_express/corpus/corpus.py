@@ -30,6 +30,14 @@ class Corpus(ABC):
     def get_corpus(self):
         pass
 
+    @abstractclassmethod
+    def save_to_disk(self, file_location: str):
+        pass
+
+    @abstractclassmethod
+    def get_id(self) -> str:
+        pass
+
 
 class TrainTestDataset(ABC):
     def get_train_data(self) -> RawDataset:

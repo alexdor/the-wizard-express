@@ -1,3 +1,8 @@
+from json import dump
+from os.path import dirname
+from pathlib import Path
+from typing import List
+
 from datasets import concatenate_datasets, load_dataset
 
 from ..config import Config
@@ -42,7 +47,7 @@ class TriviaQA(Corpus, TrainTestDataset):
             num_proc=Config.max_proc_to_use,
         )
 
-    def get_corpus(self):
+    def get_corpus(self) -> List[str]:
         if self.corpus is None:
             dataset = concatenate_datasets(
                 (
@@ -64,3 +69,12 @@ class TriviaQA(Corpus, TrainTestDataset):
             self.corpus = dataset
 
         return self.corpus
+
+    def save_to_disk(self, file_location: str):
+        corpus = self.get_corpus()
+        Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
+        with open(file_location, "w+", encoding="utf-8") as f:
+            f.writelines([f"{line}\n" for line in corpus])
+
+    def get_id(self):
+        return self.__class__.__name__

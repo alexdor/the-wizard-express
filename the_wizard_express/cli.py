@@ -1,8 +1,11 @@
 """Console script for the_wizard_express."""
 import sys
 from multiprocessing import cpu_count
+from os.path import join
 
 import click
+
+from the_wizard_express.tokenizer.tokenizer import WordPiece
 
 from .config import Config
 from .corpus.triviaqa import TriviaQA
@@ -20,7 +23,10 @@ def main(debug, max_proc):
 
 @main.command()
 def trivia():
-    TriviaQA()
+    tok = WordPiece(TriviaQA())
+    t = tok.encode_batch(["This is a batch"])
+    print("encoded", t[0].tokens, t[0].ids)
+    print("decoded", tok.tokens_to_sentance(t[0].ids))
     return 0
 
 

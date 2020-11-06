@@ -29,5 +29,12 @@ class _config:
     def max_proc_to_use(self, value: int) -> None:
         self._proc = value
 
+    vocab_size = 3000
+    unk_token = "[UNK]"
+    sep_token = "[SEP]"
+    pad_token = "[PAD]"
+    cls_token = "[CLS]"
+    mask_token = "[MASK]"
+
 
 Config = _config()

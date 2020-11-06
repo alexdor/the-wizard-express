@@ -6,3 +6,4 @@ datasets~=1.1.2
 apache-beam~=2.25.0
 Click~=7.1.2
 typing_extensions~=3.7.4
+tokenizers==0.9.3

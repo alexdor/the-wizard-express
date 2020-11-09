@@ -33,9 +33,6 @@ class TFIDFRetriever(Retriever):
         pass
 
 
-base_path = os.path.abspath("../../../small_ICT/")
-
-
 # The following 3 classes are copied from HuggingFace codebase, as there are no exports
 class BertPredictionHeadTransform(nn.Module):
     def __init__(self, config):

@@ -1,1 +1,1 @@
-from .reader import Reader
+from .reader import REALMReader

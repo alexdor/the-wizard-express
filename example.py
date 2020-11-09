@@ -17,6 +17,7 @@ from transformers import (
 
 from the_wizard_express.datasets.dataset import QADataset
 from the_wizard_express.retriever.retriever import REALMRetriever
+from the_wizard_express.reader.reader import REALMReader
 
 # Set the seed value all over the place to make this reproducible.
 seed_val = 10
@@ -56,8 +57,7 @@ validation_dataloader = QADataset(os.path.realpath("../validation/"), tokenizer)
 
 # Load retriever model
 # Initialise PyTorch model with BertConfig - change for Bert-base
-base_path = os.path.abspath("../small_ICT/")
-config = BertConfig(
+retriever_config = BertConfig(
     vocab_size=30522,
     hidden_size=128,
     num_hidden_layers=2,
@@ -65,10 +65,23 @@ config = BertConfig(
     type_vocab_size=2,
     intermediate_size=512,
 )
-print("Building PyTorch model from configuration: {}".format(str(config)))
-pointer = REALMRetriever(config)
+reader_config = BertConfig(
+    vocab_size=30522,
+    hidden_size=768,
+    num_hidden_layers=12,
+    num_attention_heads=12,
+    type_vocab_size=2,
+    intermediate_size=3072,
+)
 
-retrievermodel = REALMRetriever.load_tf_checkpoints(pointer, config, base_path)
+print("Building PyTorch model from configuration: {}".format(str(retriever_config)))
+
+retrievermodel = REALMRetriever.load_tf_checkpoints(
+    REALMRetriever(retriever_config), retriever_config, os.path.abspath("../small_ICT/")
+)
+readermodel = REALMReader.load_tf_checkpoints(
+    REALMReader(reader_config), reader_config, os.path.abspath("../Bert/")
+)
 
 readerModel = AutoModelForQuestionAnswering.from_pretrained(pretrainedModelName)
 

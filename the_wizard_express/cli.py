@@ -1,16 +1,26 @@
 """Console script for the_wizard_express."""
 import sys
+from multiprocessing import cpu_count
 
 import click
 
+from .config import Config
+from .corpus.triviaqa import TriviaQA
 
-@click.command()
-def main(args=None):
-    """Console script for the_wizard_express."""
-    click.echo(
-        "Replace this message by putting your code into " "the_wizard_express.cli.main"
-    )
-    click.echo("See click documentation at https://click.palletsprojects.com/")
+
+@click.group()
+@click.option("--debug/--no-debug", default=False)
+@click.option(
+    "--max-proc", default=min(cpu_count() - 1, 8), show_default=True, type=int
+)
+def main(debug, max_proc):
+    Config.debug = debug
+    Config.proc_to_use = max_proc
+
+
+@main.command()
+def trivia():
+    TriviaQA()
     return 0
 
 

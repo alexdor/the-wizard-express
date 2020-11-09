@@ -28,6 +28,11 @@ class QADataset(torch.utils.data.Dataset):
         self.block_size = int(self.block_paths[0].split("-")[1])
         self.block_idx, self.line_idx = None, None
 
+        count = lambda f: (1 for _ in open(os.path.join(self.directory, f)))
+        self.size = sum([sum(count(f)) for f in self.block_paths])
+
+        print("Loaded dataset of size: {}".format(self.size))
+
     def __iter__(self):
         return self
 
@@ -39,9 +44,7 @@ class QADataset(torch.utils.data.Dataset):
 
     def __len__(self):
         # True dataset size
-        count = lambda f: (1 for _ in open(os.path.join(self.directory, f)))
-        s = sum([sum(count(f)) for f in self.block_paths])
-        return s
+        return self.size
 
     def __next__(self):
         # No data has been loaded yet
@@ -61,7 +64,12 @@ class QADataset(torch.utils.data.Dataset):
             # Request a new block
             self.block_idx = None
             item = self.__next__()
-        parsedJson = json.loads(item)
+        try:
+            parsedJson = json.loads(item)
+        except ValueError:
+            with open(os.path.realpath("../error.txt"), "w") as error:
+                error.write(str(item))
+            return self.__next__()
         short_answer = []
         for annotation in parsedJson["annotations"]:
             if annotation["short_answers"] == []:

@@ -1,19 +1,22 @@
-from the_wizard_express import QADataset
-from torch.utils.data import RandomSampler, DataLoader
-from transformers import (
-    AutoTokenizer,
-    AutoModelForQuestionAnswering,
-    AdamW,
-    get_linear_schedule_with_warmup,
-)
-
-import random
-import numpy as np
-import torch
-import time
 import datetime
 import json
 import os
+import random
+import time
+
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, RandomSampler
+from transformers import (
+    AdamW,
+    AutoModelForQuestionAnswering,
+    AutoTokenizer,
+    get_linear_schedule_with_warmup,
+    BertConfig,
+)
+
+from the_wizard_express.datasets.dataset import QADataset
+from the_wizard_express.retriever.retriever import REALMRetriever
 
 # Set the seed value all over the place to make this reproducible.
 seed_val = 10
@@ -22,7 +25,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 
-pretrainedModelName = "bert-base-uncased"
+pretrainedModelName = "prajjwal1/bert-tiny"
 
 # Training and validation loss, validation accuracy, and timings.
 training_stats = []
@@ -49,6 +52,23 @@ validation_dataloader = QADataset(os.path.realpath("../validation/"), tokenizer)
 
 # training_dataloader = DataLoader(QADataset(initializeNQDataset(os.path.realpath("../training/xx-1-training.jsonl"), tokenizer)), num_workers=1, batch_size=1)
 # validation_dataloader = DataLoader(QADataset(initializeNQDataset(os.path.realpath("../validation/xx-1-validation.jsonl"), tokenizer)), num_workers=1, batch_size=1)
+
+
+# Load retriever model
+# Initialise PyTorch model with BertConfig - change for Bert-base
+base_path = os.path.abspath("../small_ICT/")
+config = BertConfig(
+    vocab_size=30522,
+    hidden_size=128,
+    num_hidden_layers=2,
+    num_attention_heads=2,
+    type_vocab_size=2,
+    intermediate_size=512,
+)
+print("Building PyTorch model from configuration: {}".format(str(config)))
+pointer = REALMRetriever(config)
+
+retrievermodel = REALMRetriever.load_tf_checkpoints(pointer, config, base_path)
 
 readerModel = AutoModelForQuestionAnswering.from_pretrained(pretrainedModelName)
 

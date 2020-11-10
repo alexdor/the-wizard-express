@@ -101,7 +101,4 @@ ENV/
 # mypy
 .mypy_cache/
 
-# IDE settings
-.vscode/
-
 .envrc

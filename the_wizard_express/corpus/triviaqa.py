@@ -75,6 +75,3 @@ class TriviaQA(Corpus, TrainTestDataset):
         Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
         with open(file_location, "w+", encoding="utf-8") as f:
             f.writelines([f"{line}\n" for line in corpus])
-
-    def get_id(self):
-        return self.__class__.__name__

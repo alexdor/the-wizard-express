@@ -27,16 +27,15 @@ class Corpus(ABC):
     """
 
     @abstractclassmethod
-    def get_corpus(self):
+    def get_corpus(self) -> List[str]:
         pass
 
     @abstractclassmethod
     def save_to_disk(self, file_location: str):
         pass
 
-    @abstractclassmethod
     def get_id(self) -> str:
-        pass
+        return self.__class__.__name__
 
 
 class TrainTestDataset(ABC):

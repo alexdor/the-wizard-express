@@ -5,7 +5,7 @@ from os.path import join
 
 import click
 
-from the_wizard_express.tokenizer.tokenizer import WordPiece
+from the_wizard_express.tokenizer.word import WordTokenizer
 
 from .config import Config
 from .corpus.triviaqa import TriviaQA
@@ -23,8 +23,10 @@ def main(debug, max_proc):
 
 @main.command()
 def trivia():
-    tok = WordPiece(TriviaQA())
-    t = tok.encode_batch(["This is a batch"])
+    tok = WordTokenizer(TriviaQA())
+    t = tok.encode_batch(
+        ["This is a batch do you have the ability to encode and decode it"]
+    )
     print("encoded", t[0].tokens, t[0].ids)
     print("decoded", tok.tokens_to_sentance(t[0].ids))
     return 0

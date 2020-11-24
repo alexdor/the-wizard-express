@@ -5,7 +5,7 @@ from os.path import dirname, exists, join
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from nltk import download
+from nltk import data, download
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tokenizers import AddedToken
@@ -13,7 +13,11 @@ from tokenizers import Tokenizer as HuggingFaceTokenizer
 from tokenizers import processors, trainers
 from tokenizers.implementations import BaseTokenizer
 from tokenizers.models import WordLevel
-from tokenizers.normalizers import Lowercase, Sequence, unicode_normalizer_from_str
+from tokenizers.normalizers import (
+    Lowercase,
+    Sequence,
+    unicode_normalizer_from_str,
+)
 from tokenizers.pre_tokenizers import WhitespaceSplit
 from tqdm import tqdm
 
@@ -23,6 +27,8 @@ from the_wizard_express.utils.utils import generate_cache_path
 
 from ..config import Config
 from ..corpus.corpus import Corpus
+
+data.path.append(join(Config.cache_dir, "nltk"))
 
 additional_strings_to_drop = (
     ".",
@@ -141,7 +147,9 @@ class WordLevelBertTokenizer(BaseTokenizer):
         unicode_normalizer: Optional[str] = None,
     ):
         if vocab_file is not None:
-            tokenizer = HuggingFaceTokenizer(WordLevel(vocab_file, unk_token=unk_token))
+            tokenizer = HuggingFaceTokenizer(
+                WordLevel(vocab_file, unk_token=unk_token)
+            )
         else:
             # tokenizer = HuggingFaceTokenizer(WordLevel())
             raise TypeError("WordLevelBert requires a vocab file for now")

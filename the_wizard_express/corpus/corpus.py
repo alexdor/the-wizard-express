@@ -27,8 +27,6 @@ class Corpus(ABC):
     Abstract class for all the corpus
     """
 
-    __slots__ = ["corpus"]
-
     corpus: Optional[List[str]] = None
 
     @abstractclassmethod
@@ -49,9 +47,7 @@ class Corpus(ABC):
 
 
 class TrainTestDataset(ABC):
-    __slots__ = ["dataset"]
-
-    dataset = None
+    dataset: RawDataset = None
 
     def get_train_data(self) -> RawDataset:
         return self.dataset["train"]

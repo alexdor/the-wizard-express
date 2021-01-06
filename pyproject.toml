@@ -25,19 +25,19 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.6.2,<3.9"
-tensorflow = "2.4.0"
-torch ="^1.7.1"
-torchvision ="^0.8.1"
-transformers ="^4.1.1"
-datasets ="^1.2.0"
-apache-beam ="^2.25.0"
-Click ="^7.1.2"
-typing_extensions ="^3.7.4"
-tokenizers="^0.9.4"
-inflect ="^4.1.0"
-nltk ="^3.5"
-scipy ="^1.5.4"
-numpy ="^1.19.4"
+torch ="~1.7.1"
+torchvision ="~0.8.1"
+transformers ="~4.1.1"
+datasets ="~1.2.0"
+apache-beam ="~2.25.0"
+Click ="~7.1.2"
+typing_extensions ="~3.7.4"
+tokenizers="~0.9.4"
+inflect ="~4.1.0"
+nltk ="~3.5"
+scipy ="~1.5.4"
+numpy ="^1.18.0"
+tensorflow = "~2.3.0"
 
 
 [tool.poetry.dev-dependencies]

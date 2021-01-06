@@ -21,10 +21,7 @@ pip install the-wizard-express
 Showcase how your project can be used:
 
 ```python
-from the_wizard_express.example import some_function
-
-print(some_function(3, 4))
-# => 7
+#TODO
 ```
 
 ## Credits

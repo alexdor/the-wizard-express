@@ -1,4 +1,3 @@
-from json import dump
 from os.path import dirname
 from pathlib import Path
 from typing import List

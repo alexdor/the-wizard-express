@@ -1,11 +1,11 @@
 from abc import ABC, abstractclassmethod
-from os.path import exists
+from os.path import lexists
 from typing import Dict, List
 
 from tokenizers import Encoding
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 
-from the_wizard_express.utils.utils import generate_cache_path
+from the_wizard_express.utils import generate_cache_path
 
 from ..corpus.corpus import Corpus
 
@@ -17,7 +17,7 @@ class Tokenizer(ABC):
     def __init__(self, corpus: Corpus) -> None:
         self.tokenizer_path = generate_cache_path("tokenizer", corpus, self)
 
-        if exists(self.tokenizer_path):
+        if lexists(self.tokenizer_path):
             self._load_from_file(self.tokenizer_path)
             return
         self._build(corpus, self.tokenizer_path)

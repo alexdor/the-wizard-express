@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractclassmethod
 from operator import itemgetter
-from typing import List, Union
+from typing import List, Optional, Union
 
 from datasets import Dataset
 
@@ -27,6 +27,10 @@ class Corpus(ABC):
     Abstract class for all the corpus
     """
 
+    __slots__ = ["corpus"]
+
+    corpus: Optional[List[str]] = None
+
     @abstractclassmethod
     def get_corpus(self) -> List[str]:
         pass
@@ -45,6 +49,10 @@ class Corpus(ABC):
 
 
 class TrainTestDataset(ABC):
+    __slots__ = ["dataset"]
+
+    dataset = None
+
     def get_train_data(self) -> RawDataset:
         return self.dataset["train"]
 

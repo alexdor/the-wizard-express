@@ -3,8 +3,8 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = the_wizard_express
+SPHINXBUILD   = sphinx-build
+SPHINXPROJ    = dotenv-linter
 SOURCEDIR     = .
 BUILDDIR      = _build
 

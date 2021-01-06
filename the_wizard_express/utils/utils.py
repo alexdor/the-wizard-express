@@ -3,7 +3,6 @@ from pathlib import Path
 from pickle import HIGHEST_PROTOCOL, dump
 
 from inflect import engine
-
 from the_wizard_express.config import Config
 
 inflect_engine = engine()
@@ -20,6 +19,6 @@ def generate_cache_path(name: str, *args, **kwargs):
     )
 
 
-def pickle_and_save_to_file(item, filepath, protocol=HIGHEST_PROTOCOL):
+def pickle_and_save_to_file(item, filepath: str, protocol: int = HIGHEST_PROTOCOL):
     Path(dirname(filepath)).mkdir(parents=True, exist_ok=True)
     dump(item, open(filepath, "wb"), protocol=protocol)

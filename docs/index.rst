@@ -1,20 +1,18 @@
-Welcome to The wizard express's documentation!
-======================================
+.. mdinclude:: ../README.md
+
+Contents
+--------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+  :maxdepth: 1
+  :caption: Changelog
 
-   readme
-   installation
-   usage
-   modules
-   contributing
-   authors
-   history
+  pages/changelog.rst
+
 
 Indices and tables
-==================
+------------------
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

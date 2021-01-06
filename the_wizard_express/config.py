@@ -9,7 +9,7 @@ class _config:
 
     def __init__(self):
         self._debug = False
-        self._proc = None
+        self._proc = 1
 
     cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
     """Config.cache_dir The cache directory to store models and other temporary files"""

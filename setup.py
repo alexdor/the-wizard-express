@@ -32,7 +32,7 @@ setup_requirements = []
 setup(
     author="Alexandros Dorodoulis, Amalia Matei, Jesper Lund Petersen",
     author_email="",
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     classifiers=[
         # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         # 'Development Status :: 1 - Planning',

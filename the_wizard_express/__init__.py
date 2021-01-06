@@ -12,4 +12,5 @@ __all__ = [
     "retriever",
     "cli",
     "datasets",
+    "utils",
 ]

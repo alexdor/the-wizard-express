@@ -48,10 +48,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 the_wizard_express tests
+	poetry run mypy the_wizard_express tests/**/*.py
+	poetry run flake8 .
+	poetry run doc8 -q doc
 
 test: ## run tests quickly with the default Python
-	python setup.py test
+	poetry run pytest
 
 test-all: ## run tests on every Python version with tox
 	tox
@@ -77,20 +79,24 @@ release: dist ## package and upload a release
 	twine upload dist/*
 
 dist: clean ## builds source and wheel package
-	python3 setup.py sdist
-	python3 setup.py bdist_wheel
+	poetry run python setup.py sdist
+	poetry run python setup.py bdist_wheel
 	ls -l dist
 
 dev: ## install dependencies and setup dev machine
-	python3 -m pip install -r requirements/dev.txt
-	pre-commit install
+	# $(shell curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -)
+	poetry install
+	poetry run pre-commit install
 
 install: clean ## install the package to the active Python's site-packages
-	python3 setup.py install
+	poetry check
+	poetry run pip check
+	poetry run safety check --full-repor
+	poetry run python setup.py install
 
 run: ## execute cli
-	python3 -m the_wizard_express
+	poetry run python -m the_wizard_express
 
 
 command: ## execute a specific command by passing the command argument
-	python3 -m the_wizard_express $(command)
+	poetry run python -m the_wizard_express $(command)

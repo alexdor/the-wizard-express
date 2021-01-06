@@ -1,5 +1,6 @@
 import sys
 from abc import ABC, abstractclassmethod
+from operator import itemgetter
 from typing import List, Union
 
 from datasets import Dataset
@@ -33,6 +34,11 @@ class Corpus(ABC):
     @abstractclassmethod
     def save_to_disk(self, file_location: str):
         pass
+
+    def get_docs_by_index(self, indexes: List[int]) -> List[str]:
+        if self.corpus is None:
+            self.get_corpus()
+        return itemgetter(*indexes)(self.corpus)
 
     def get_id(self) -> str:
         return self.__class__.__name__

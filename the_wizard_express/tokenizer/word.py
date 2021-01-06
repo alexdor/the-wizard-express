@@ -1,128 +1,83 @@
 from collections import Counter
-from json import dump, load
 from multiprocessing import Pool
-from os.path import dirname, exists, join
+from os.path import dirname, join, lexists
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from pickle import load
+from typing import Dict, Optional, Union
 
 from nltk import data, download
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tokenizers import AddedToken
 from tokenizers import Tokenizer as HuggingFaceTokenizer
-from tokenizers import processors, trainers
+from tokenizers import processors
 from tokenizers.implementations import BaseTokenizer
 from tokenizers.models import WordLevel
-from tokenizers.normalizers import (
-    Lowercase,
-    Sequence,
-    unicode_normalizer_from_str,
-)
+from tokenizers.normalizers import Lowercase, Sequence, unicode_normalizer_from_str
 from tokenizers.pre_tokenizers import WhitespaceSplit
 from tqdm import tqdm
 
 from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.tokenizer.wordpiece import WordPiece
-from the_wizard_express.utils.utils import generate_cache_path
+from the_wizard_express.utils import generate_cache_path
+from the_wizard_express.utils.utils import pickle_and_save_to_file
 
 from ..config import Config
 from ..corpus.corpus import Corpus
 
-data.path.append(join(Config.cache_dir, "nltk"))
-
-additional_strings_to_drop = (
-    ".",
-    ",",
-    "-",
-    "!",
-    "(",
-    ")",
-    ";",
-    "''",
-    '""',
-    "'",
-    '"',
-    "_",
-    "[",
-    "]",
-    "...",
-    "`",
-    "``",
-    "--",
-    "#",
-    ":",
-    "'s",
-    "*",
-    "–",
-    "%",
-    "$",
-    "&",
-    "+",
-    "=",
-    "/",
-    "\\",
-)
+nltk_data_path = join(Config.cache_dir, "nltk")
+data.path.append(nltk_data_path)
 
 
 class WordTokenizer(Tokenizer):
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
         vocab_path = generate_cache_path(
-            "vocab",
-            self,
-            corpus,
-            skip_vocab_size=True,
+            "vocab", self, corpus, skip_vocab_size=True, file_ending=".pickle"
         )
-        if exists(vocab_path):
-            with open(vocab_path, "r") as f:
-                vocab = Counter(load(f)).most_common(Config.vocab_size)
+        vocab = (
+            Counter(load(open(vocab_path, "rb"))).most_common(Config.vocab_size)
+            if lexists(vocab_path)
+            else self._build_vocab(corpus, vocab_path)
+        )
 
-        else:
-            vocab = self._build_vocab(corpus, vocab_path)
         vocab = {value: i for (i, (value, _)) in enumerate(vocab)}
         vocab.update(
             {
                 value: i + len(vocab)
-                for (i, value) in enumerate(
-                    [
-                        Config.unk_token,
-                        Config.sep_token,
-                        Config.cls_token,
-                        Config.pad_token,
-                        Config.mask_token,
-                    ]
-                )
+                for (i, value) in enumerate(Config.special_tokens_list)
             }
         )
         self.tokenizer = WordLevelBertTokenizer(vocab)
 
-    def _build_vocab(self, corpus, vocab_path):
-        download("punkt", download_dir=join(Config.cache_dir, "nltk"))
-        download("stopwords", download_dir=join(Config.cache_dir, "nltk"))
+    def _build_vocab(self, corpus: Corpus, vocab_path: str):
+        download("punkt", download_dir=nltk_data_path)
+        download("stopwords", download_dir=nltk_data_path)
         cor = corpus.get_corpus()
         c = Counter()
-        with Pool(Config.max_proc_to_use) as pool:
-            for res in tqdm(
-                pool.imap_unordered(
-                    func=WordTokenizer._prep_vocab, iterable=cor, chunksize=50
-                ),
-                total=len(cor),
-            ):
-                c += res
+        batch_size = 100
+        with tqdm(total=len(cor)) as pbar:
+            with Pool(Config.max_proc_to_use) as pool:
+                for res in pool.imap_unordered(
+                    func=WordTokenizer._prep_vocab,
+                    iterable=(
+                        cor[i : i + batch_size] for i in range(0, len(cor), batch_size)
+                    ),
+                ):
+                    pbar.update(batch_size)
+                    c += res
         Path(dirname(vocab_path)).mkdir(parents=True, exist_ok=True)
-        with open(vocab_path, "w+") as f:
-            dump(c, f)
+        pickle_and_save_to_file(c, vocab_path)
         return c.most_common(Config.vocab_size)
 
     @staticmethod
-    def _prep_vocab(sentance) -> Counter:
+    def _prep_vocab(sentance_list) -> Counter:
         stop_words = set(stopwords.words("english"))
-        # stop_words.update(additional_strings_to_drop)
 
         # We are droping the stop words and everything that isn't a string
         # we might need to reconsider the numbers if we increase our vocab
         return Counter(
             (
                 token
+                for sentance in sentance_list
                 for sentance in sent_tokenize(sentance.lower())
                 for token in word_tokenize(sentance)
                 if token.isalpha() and token not in stop_words
@@ -147,9 +102,7 @@ class WordLevelBertTokenizer(BaseTokenizer):
         unicode_normalizer: Optional[str] = None,
     ):
         if vocab_file is not None:
-            tokenizer = HuggingFaceTokenizer(
-                WordLevel(vocab_file, unk_token=unk_token)
-            )
+            tokenizer = HuggingFaceTokenizer(WordLevel(vocab_file, unk_token=unk_token))
         else:
             # tokenizer = HuggingFaceTokenizer(WordLevel())
             raise TypeError("WordLevelBert requires a vocab file for now")

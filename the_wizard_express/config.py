@@ -1,4 +1,5 @@
 from os import getenv, path
+from typing import List
 
 
 class _config:
@@ -35,6 +36,16 @@ class _config:
     pad_token = "[PAD]"
     cls_token = "[CLS]"
     mask_token = "[MASK]"
+
+    @property
+    def special_tokens_list(self) -> List[str]:
+        return [
+            self.unk_token,
+            self.sep_token,
+            self.cls_token,
+            self.pad_token,
+            self.mask_token,
+        ]
 
 
 Config = _config()

@@ -2,10 +2,9 @@
 import sys
 from multiprocessing import cpu_count
 from os import environ
-from os.path import join
 
 import click
-
+from the_wizard_express.reader import TinyBertReader
 from the_wizard_express.retriever import TFIDFRetriever
 from the_wizard_express.tokenizer import WordTokenizer
 
@@ -20,16 +19,25 @@ from .corpus import TriviaQA
 )
 def main(debug, max_proc):
     Config.debug = debug
-    Config.proc_to_use = max_proc
+    Config.max_proc_to_use = max_proc
 
 
 @main.command()
 def trivia():
-    retriever = TFIDFRetriever(corpus=TriviaQA(), tokenizer=WordTokenizer(TriviaQA()))
-    t = retriever.retrieve_docs(
-        "This is a batch do you have the ability to encode and decode it", 5
+    corpus = TriviaQA()
+    tokenizer = WordTokenizer(corpus)
+    retriever = TFIDFRetriever(corpus=corpus, tokenizer=tokenizer)
+    train_point = corpus.get_train_data()[20]
+    question = train_point["question"]
+    docs = retriever.retrieve_docs(question, 5)
+    answer = TinyBertReader(tokenizer=tokenizer).answer(
+        question=question, documents=[train_point["context"]]
     )
-    print(t)
+    print(f"Question: {question}")
+    print(f"Expected answer: {train_point['answer']}")
+    print(f"Retrived proper document: {train_point['context'] in docs}")
+    print("Model's answer:")
+    print(answer)
     return 0
 
 

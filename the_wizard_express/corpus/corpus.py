@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractclassmethod
 from operator import itemgetter
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from datasets import Dataset
 
@@ -22,6 +22,12 @@ class DataType(TypedDict):
 RawDataset = Union[List[DataType], Dataset]
 
 
+class DatasetDict(TypedDict):
+    train: Dataset
+    test: Dataset
+    validation: Dataset
+
+
 class Corpus(ABC):
     """
     Abstract class for all the corpus
@@ -34,10 +40,10 @@ class Corpus(ABC):
         pass
 
     @abstractclassmethod
-    def save_to_disk(self, file_location: str):
+    def save_to_disk(self, file_location: str) -> None:
         pass
 
-    def get_docs_by_index(self, indexes: List[int]) -> List[str]:
+    def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
         if self.corpus is None:
             self.get_corpus()
         return itemgetter(*indexes)(self.corpus)
@@ -47,7 +53,7 @@ class Corpus(ABC):
 
 
 class TrainTestDataset(ABC):
-    dataset: RawDataset = None
+    dataset: DatasetDict = None
 
     def get_train_data(self) -> RawDataset:
         return self.dataset["train"]

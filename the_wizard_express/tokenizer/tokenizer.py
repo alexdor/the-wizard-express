@@ -1,11 +1,10 @@
 from abc import ABC, abstractclassmethod
 from os.path import lexists
-from typing import Dict, List
-
-from tokenizers import Encoding
-from tokenizers import Tokenizer as HuggingFaceTokenizer
+from typing import Dict, List, Optional, Union
 
 from the_wizard_express.utils import generate_cache_path
+from tokenizers import Encoding
+from tokenizers import Tokenizer as HuggingFaceTokenizer
 
 from ..corpus.corpus import Corpus
 
@@ -35,8 +34,12 @@ class Tokenizer(ABC):
         """
         self.tokenizer = HuggingFaceTokenizer.from_file(file)
 
-    def encode(self, sentances: str) -> Encoding:
-        return self.tokenizer.encode(sentances)
+    def encode(
+        self,
+        sentances: str,
+        text_pair: Optional[Union[str, List[str], List[int]]] = None,
+    ) -> Encoding:
+        return self.tokenizer.encode(sentances, text_pair)
 
     def encode_batch(self, sentances: List[str]) -> List[Encoding]:
         return self.tokenizer.encode_batch(sentances)

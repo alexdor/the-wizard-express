@@ -3,13 +3,14 @@ from pathlib import Path
 from typing import List
 
 from datasets import concatenate_datasets, load_dataset
+from datasets.arrow_dataset import Dataset
 
 from ..config import Config
 from .corpus import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):
-    def __init__(self, percent_of_data_to_keep=0.1) -> None:
+    def __init__(self, percent_of_data_to_keep: float = 0.1) -> None:
         self.corpus = None
         dataset = load_dataset(
             "trivia_qa",
@@ -22,7 +23,7 @@ class TriviaQA(Corpus, TrainTestDataset):
             num_proc=Config.max_proc_to_use,
         )
 
-        def select_part(data, percent):
+        def select_part(data: Dataset, percent: float) -> Dataset:
             return data.select(range(round(len(data) * percent)))
 
         dataset["train"] = select_part(dataset["train"], percent_of_data_to_keep)
@@ -69,7 +70,7 @@ class TriviaQA(Corpus, TrainTestDataset):
 
         return self.corpus
 
-    def save_to_disk(self, file_location: str):
+    def save_to_disk(self, file_location: str) -> None:
         corpus = self.get_corpus()
         Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
         with open(file_location, "w+", encoding="utf-8") as f:

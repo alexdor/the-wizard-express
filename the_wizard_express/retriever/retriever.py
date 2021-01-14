@@ -4,16 +4,20 @@ from math import log10
 from multiprocessing import Pool
 from os.path import lexists
 from pickle import load
-from typing import Iterator, List, Tuple
+from typing import Counter as CounterType
+from typing import Dict, Iterator, Tuple
 
 from numpy import argpartition, empty, ndarray, zeros
 from numpy.core.shape_base import hstack
 from scipy.sparse import csr_matrix
-from tqdm import tqdm
-
 from the_wizard_express.config import Config
 from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.utils import generate_cache_path, pickle_and_save_to_file
+from the_wizard_express.utils import (
+    generate_cache_path,
+    pickle_and_save_to_file,
+)
+from tokenizers import Encoding
+from tqdm import tqdm
 
 from ..corpus.corpus import Corpus
 
@@ -33,10 +37,10 @@ class Retriever(ABC):
         if lexists(self.retriever_path):
             self._load_from_file()
             return
-        self._build(self.retriever_path)
+        self._build()
 
     @abstractclassmethod
-    def retrieve_docs(self, question: str, number_of_docs: int) -> List[str]:
+    def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         """
         Main method for the retriever, it's used to get the relavant documents
         for a given question
@@ -53,10 +57,9 @@ class Retriever(ABC):
     @abstractclassmethod
     def _build(self) -> None:
         """
-        This method is called in order to do any preproccesing needed
+        This method is called in order to do any preprocessing needed
         before using the retriever
         """
-        pass
 
     def get_id(self) -> str:
         """
@@ -66,7 +69,7 @@ class Retriever(ABC):
 
 
 class TFIDFRetriever(Retriever):
-    def retrieve_docs(self, question: str, number_of_docs: int) -> List[str]:
+    def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         encoded_question = self.tokenizer.encode(question)
 
         # Drop extra tokens (sep, uknown etc)
@@ -94,7 +97,7 @@ class TFIDFRetriever(Retriever):
         corpus_length = len(encoded_corpus)
         tf = empty((len(vocab_values), 0))
         chunksize = 300
-        idf_counter = Counter()
+        idf_counter: CounterType[int] = Counter()
 
         corpus_iterator = self._get_iterator_for_corpus(
             encoded_corpus, vocab_values, chunksize=chunksize
@@ -130,14 +133,14 @@ class TFIDFRetriever(Retriever):
 
     @staticmethod
     def _create_tf_idf(
-        params: Tuple[Tuple[str], Tuple[int]]
-    ) -> Tuple[ndarray, Counter]:
+        params: Tuple[Tuple[Encoding, ...], Tuple[int]]
+    ) -> Tuple[ndarray, CounterType[int]]:
         (encoded_corpus, vocab_values) = params
-        idf = {}
+        idf: Dict[int, int] = {}
         tf = zeros((len(vocab_values), len(encoded_corpus)))
         for corpus_index, doc in enumerate(encoded_corpus):
             doc_len = len(doc)
-            counter = Counter(doc.ids)
+            counter: CounterType[int] = Counter(doc.ids)
             for word_id in vocab_values:
                 if word_id in doc.ids:
                     idf[word_id] = idf.get(word_id, 0) + 1
@@ -146,8 +149,8 @@ class TFIDFRetriever(Retriever):
         return (tf, Counter(idf))
 
     def _get_iterator_for_corpus(
-        self, encoded_corpus: Tuple[str], vocab_values, chunksize=100
-    ) -> Iterator[Tuple[Tuple[str], Tuple[int]]]:
+        self, encoded_corpus: Tuple[Encoding, ...], vocab_values, chunksize=100
+    ) -> Iterator[Tuple[Tuple[Encoding, ...], Tuple[int]]]:
         corpus_index = 0
         for corpus_index in range(0, len(encoded_corpus), chunksize):
             yield (

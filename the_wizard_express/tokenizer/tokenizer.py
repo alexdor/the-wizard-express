@@ -26,7 +26,6 @@ class Tokenizer(ABC):
         """
         A method that creates a tokenizer from a given corpus
         """
-        pass
 
     def _load_from_file(self, file: str) -> None:
         """

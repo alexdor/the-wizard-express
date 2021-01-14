@@ -2,7 +2,7 @@ from os import getenv, path
 from typing import List
 
 
-class _config:
+class _Config:
     """
     A class with all the configuration used accross the projects
     """
@@ -48,4 +48,4 @@ class _config:
         ]
 
 
-Config = _config()
+Config: _Config = _Config()

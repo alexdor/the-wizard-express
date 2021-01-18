@@ -33,10 +33,17 @@ class Corpus(ABC):
     Abstract class for all the corpus
     """
 
-    corpus: Optional[List[str]] = None
+    @property
+    def corpus(self):
+        if not self._corpus:
+            self._build_corpus()
+        return self._corpus
+
+    _corpus: Tuple[str] = tuple()
+    percent_of_data_to_keep = 1.0
 
     @abstractclassmethod
-    def get_corpus(self) -> List[str]:
+    def _build_corpus(self) -> None:
         pass
 
     @abstractclassmethod
@@ -44,12 +51,10 @@ class Corpus(ABC):
         pass
 
     def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
-        if self.corpus is None:
-            self.get_corpus()
-        return itemgetter(*indexes)(self.corpus)
+        return itemgetter(*indexes)(Corpus.corpus.__get__(self))
 
     def get_id(self) -> str:
-        return self.__class__.__name__
+        return f"{self.__class__.__name__}{self.percent_of_data_to_keep}"
 
 
 class TrainTestDataset(ABC):

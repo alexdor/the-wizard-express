@@ -4,7 +4,7 @@ from multiprocessing import cpu_count
 from os import environ
 
 import click
-from the_wizard_express.reader import TinyBertReader
+from the_wizard_express.reader import RealmReader
 from the_wizard_express.retriever import TFIDFRetriever
 from the_wizard_express.tokenizer import WordTokenizer
 
@@ -15,7 +15,7 @@ from .corpus import TriviaQA
 @click.group()
 @click.option("--debug/--no-debug", default=False)
 @click.option(
-    "--max-proc", default=min(cpu_count() - 1, 8), show_default=True, type=int
+    "--max-proc", default=min(cpu_count() - 1, 15), show_default=True, type=int
 )
 def main(debug, max_proc):
     Config.debug = debug
@@ -24,18 +24,23 @@ def main(debug, max_proc):
 
 @main.command()
 def trivia():
-    corpus = TriviaQA()
+    corpus = TriviaQA(percent_of_data_to_keep=1)
     tokenizer = WordTokenizer(corpus)
     retriever = TFIDFRetriever(corpus=corpus, tokenizer=tokenizer)
     train_point = corpus.get_train_data()[20]
     question = train_point["question"]
-    docs = retriever.retrieve_docs(question, 5)
-    answer = TinyBertReader(tokenizer=tokenizer).answer(
-        question=question, documents=[train_point["context"]]
+    docs = retriever.retrieve_docs(question, 3)
+    found_documents = train_point["context"] in docs
+    if not found_documents:
+        docs += tuple([train_point["context"]])
+    # for d in docs:
+    answer = RealmReader(tokenizer=tokenizer).answer(
+        question=question, document=train_point["context"]
     )
+    print("\n" * 10)
     print(f"Question: {question}")
     print(f"Expected answer: {train_point['answer']}")
-    print(f"Retrived proper document: {train_point['context'] in docs}")
+    print(f"Retrived proper document: {found_documents}")
     print("Model's answer:")
     print(answer)
     return 0

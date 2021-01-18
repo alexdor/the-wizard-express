@@ -8,18 +8,21 @@ from typing import Dict, Optional, Union
 from nltk import data, download
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
+from the_wizard_express.tokenizer.tokenizer import Tokenizer
+from the_wizard_express.utils import generate_cache_path
+from the_wizard_express.utils.utils import pickle_and_save_to_file
 from tokenizers import AddedToken
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 from tokenizers import processors
 from tokenizers.implementations import BaseTokenizer
 from tokenizers.models import WordLevel
-from tokenizers.normalizers import Lowercase, Sequence, unicode_normalizer_from_str
+from tokenizers.normalizers import (
+    Lowercase,
+    Sequence,
+    unicode_normalizer_from_str,
+)
 from tokenizers.pre_tokenizers import WhitespaceSplit
 from tqdm import tqdm
-
-from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.utils import generate_cache_path
-from the_wizard_express.utils.utils import pickle_and_save_to_file
 
 from ..config import Config
 from ..corpus.corpus import Corpus
@@ -29,6 +32,8 @@ data.path.append(nltk_data_path)
 
 
 class WordTokenizer(Tokenizer):
+    __slots__ = ("tokenizer", "tokenizer_path")
+
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
         vocab_path = generate_cache_path(
             "vocab", self, corpus, skip_vocab_size=True, file_ending=".pickle"
@@ -51,9 +56,9 @@ class WordTokenizer(Tokenizer):
     def _build_vocab(self, corpus: Corpus, vocab_path: str):
         download("punkt", download_dir=nltk_data_path)
         download("stopwords", download_dir=nltk_data_path)
-        cor = corpus.get_corpus()
-        c = Counter()
-        batch_size = 100
+
+        cor, c, batch_size = corpus.corpus, Counter(), 100
+
         with tqdm(total=len(cor)) as pbar:
             with Pool(Config.max_proc_to_use) as pool:
                 for res in pool.imap_unordered(

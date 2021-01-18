@@ -69,6 +69,8 @@ class Retriever(ABC):
 
 
 class TFIDFRetriever(Retriever):
+    __slots__ = ("tokenizer", "corpus", "tf_idf", "retriever_path")
+
     def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         encoded_question = self.tokenizer.encode(question)
 
@@ -89,7 +91,7 @@ class TFIDFRetriever(Retriever):
     def _build(self) -> None:
         vocab = self.tokenizer.get_vocab()
 
-        encoded_corpus = tuple(self.tokenizer.encode_batch(self.corpus.get_corpus()))
+        encoded_corpus = tuple(self.tokenizer.encode_batch(self.corpus.corpus))
         encoded_special_tokens = {vocab[token] for token in Config.special_tokens_list}
         vocab_values = tuple(
             value for value in vocab.values() if value not in encoded_special_tokens

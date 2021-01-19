@@ -1,3 +1,4 @@
+from multiprocessing import cpu_count
 from os import getenv, path
 from typing import List
 
@@ -9,7 +10,8 @@ class _Config:
 
     def __init__(self):
         self._debug = False
-        self._proc = 1
+        self._proc = min(cpu_count() - 1, 15)
+        self._percent_of_data_to_keep = 1.0
 
     cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
     """Config.cache_dir The cache directory to store models and other temporary files"""
@@ -29,6 +31,14 @@ class _Config:
     @max_proc_to_use.setter
     def max_proc_to_use(self, value: int) -> None:
         self._proc = value
+
+    @property
+    def percent_of_data_to_keep(self) -> float:
+        return self._percent_of_data_to_keep
+
+    @percent_of_data_to_keep.setter
+    def percent_of_data_to_keep(self, value: float) -> None:
+        self._percent_of_data_to_keep = value
 
     vocab_size = 8000
     unk_token = "[UNK]"

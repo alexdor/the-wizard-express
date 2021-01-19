@@ -15,12 +15,24 @@ from .corpus import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):
-    __slots__ = ("corpus_path", "percent_of_data_to_keep", "corpus", "dataset")
+    __slots__ = (
+        "corpus_path",
+        "dataset_path",
+        "percent_of_data_to_keep",
+        "corpus",
+        "dataset",
+    )
 
     def __init__(self, percent_of_data_to_keep: float = 0.1) -> None:
         Corpus.__init__(self)
         self.percent_of_data_to_keep = percent_of_data_to_keep
         self.corpus_path = generate_cache_path("corpus", self)
+        self.dataset_path = generate_cache_path("dataset", self)
+
+        if lexists(self.dataset_path):
+            self.dataset = load(open(self.dataset_path, "rb"))
+            return
+
         dataset = load_dataset(
             "trivia_qa",
             "rc",
@@ -55,6 +67,7 @@ class TriviaQA(Corpus, TrainTestDataset):
             ],
             num_proc=Config.max_proc_to_use,
         )
+        pickle_and_save_to_file(self.dataset, self.dataset_path)
 
     def _build_corpus(self) -> None:
         if lexists(self.corpus_path):
@@ -77,7 +90,7 @@ class TriviaQA(Corpus, TrainTestDataset):
             ],
             num_proc=Config.max_proc_to_use,
         )
-        dataset = tuple(sort(unique(dataset._data.column("context").to_numpy())))
+        dataset = sort(unique(dataset._data.column("context").to_numpy()))
         pickle_and_save_to_file(dataset, self.corpus_path)
         self._corpus = dataset
 

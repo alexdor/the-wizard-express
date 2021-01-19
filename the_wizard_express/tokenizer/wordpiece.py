@@ -4,10 +4,9 @@ from typing import Dict, List
 from tokenizers import Tokenizer as HugTokenizer
 from tokenizers import models, trainers
 
-from the_wizard_express.tokenizer.tokenizer import Tokenizer
-
 from ..config import Config
 from ..corpus.corpus import Corpus
+from ..tokenizer import Tokenizer
 
 
 class WordPiece(Tokenizer):

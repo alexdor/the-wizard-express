@@ -1,12 +1,15 @@
 from collections import OrderedDict
 from typing import List
 
-from the_wizard_express.reader.reader import Reader
 from torch import argmax, cat, masked_select, split, tensor, unsqueeze
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
+from .reader import Reader
+
 
 class TinyBertReader(Reader):
+    friendly_name = "tiny-bert"
+
     def _build(self) -> None:
         model_to_use = "bert-large-uncased"
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_to_use)

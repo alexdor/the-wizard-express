@@ -2,8 +2,8 @@ from abc import ABC, abstractclassmethod
 from os.path import lexists
 from typing import List
 
-from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.utils import generate_cache_path
+from ..tokenizer import Tokenizer
+from ..utils import generate_cache_path
 
 
 class Reader(ABC):
@@ -13,17 +13,20 @@ class Reader(ABC):
 
     def __init__(self, tokenizer: Tokenizer) -> None:
         self.tokenizer = tokenizer
-        self.reader_path = generate_cache_path(
+        self._reader_path = generate_cache_path(
             "reader",
             tokenizer,
             self,
             skip_vocab_size=True,
         )
 
-        if lexists(self.reader_path):
+        if lexists(self._reader_path):
             self._load_from_file()
             return
+        print(f"Buidling {self.friendly_name} reader")
         self._build()
+        # TODO
+        #  pickle_and_save_to_file(self.model, self._reader_path)
 
     @abstractclassmethod
     def answer(self, question: str, documents: List[str]) -> str:

@@ -8,9 +8,6 @@ from typing import Dict, Optional, Union
 from nltk import data, download
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.utils import generate_cache_path
-from the_wizard_express.utils.utils import pickle_and_save_to_file
 from tokenizers import AddedToken
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 from tokenizers import processors
@@ -26,13 +23,16 @@ from tqdm import tqdm
 
 from ..config import Config
 from ..corpus.corpus import Corpus
+from ..tokenizer import Tokenizer
+from ..utils import generate_cache_path, pickle_and_save_to_file
 
 nltk_data_path = join(Config.cache_dir, "nltk")
 data.path.append(nltk_data_path)
 
 
 class WordTokenizer(Tokenizer):
-    __slots__ = ("tokenizer", "tokenizer_path")
+    __slots__ = ("tokenizer", "_tokenizer_path")
+    friendly_name = "word"
 
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
         vocab_path = generate_cache_path(

@@ -2,11 +2,11 @@ from abc import ABC, abstractclassmethod
 from os.path import lexists
 from typing import Dict, List, Optional, Union
 
-from the_wizard_express.utils import generate_cache_path
 from tokenizers import Encoding
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 
 from ..corpus.corpus import Corpus
+from ..utils import generate_cache_path, pickle_and_save_to_file
 
 
 class Tokenizer(ABC):
@@ -14,12 +14,14 @@ class Tokenizer(ABC):
         return self.__class__.__name__
 
     def __init__(self, corpus: Corpus) -> None:
-        self.tokenizer_path = generate_cache_path("tokenizer", corpus, self)
+        self._tokenizer_path = generate_cache_path("tokenizer", corpus, self)
 
-        if lexists(self.tokenizer_path):
-            self._load_from_file(self.tokenizer_path)
+        if lexists(self._tokenizer_path):
+            self._load_from_file(self._tokenizer_path)
             return
-        self._build(corpus, self.tokenizer_path)
+        print(f"Buidling {self.friendly_name} tokenizer")
+        self._build(corpus, self._tokenizer_path)
+        pickle_and_save_to_file(self.tokenizer, self._tokenizer_path)
 
     @abstractclassmethod
     def _build(self, corpus: Corpus, path_to_save: str) -> None:

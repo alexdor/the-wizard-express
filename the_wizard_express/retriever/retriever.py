@@ -10,16 +10,13 @@ from typing import Dict, Iterator, Tuple
 from numpy import argpartition, empty, ndarray, zeros
 from numpy.core.shape_base import hstack
 from scipy.sparse import csr_matrix
-from the_wizard_express.config import Config
-from the_wizard_express.tokenizer.tokenizer import Tokenizer
-from the_wizard_express.utils import (
-    generate_cache_path,
-    pickle_and_save_to_file,
-)
 from tokenizers import Encoding
 from tqdm import tqdm
 
+from ..config import Config
 from ..corpus.corpus import Corpus
+from ..tokenizer import Tokenizer
+from ..utils import generate_cache_path, pickle_and_save_to_file
 
 
 class Retriever(ABC):
@@ -37,6 +34,7 @@ class Retriever(ABC):
         if lexists(self.retriever_path):
             self._load_from_file()
             return
+        print(f"Buidling {self.friendly_name} retriever")
         self._build()
 
     @abstractclassmethod
@@ -70,6 +68,7 @@ class Retriever(ABC):
 
 class TFIDFRetriever(Retriever):
     __slots__ = ("tokenizer", "corpus", "tf_idf", "retriever_path")
+    friendly_name = "tfidf"
 
     def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         encoded_question = self.tokenizer.encode(question)

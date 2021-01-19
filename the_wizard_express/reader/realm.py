@@ -4,7 +4,6 @@ from typing import List
 
 from tensorflow import reshape, shape
 from tensorflow.compat import dimension_value
-from the_wizard_express.config import Config
 from torch import (
     bool,
     cat,
@@ -17,6 +16,7 @@ from torch import (
 )
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
+from ..config import Config
 from .reader import Reader
 
 
@@ -95,6 +95,8 @@ def flatten_bert_inputs(bert_inputs):
 
 
 class RealmReader(Reader):
+    friendly_name = "realm"
+
     def _build(self) -> None:
         # self.tokenizer = DistilBertTokenizerFast.from_pretrained(
         #     "distilbert-base-uncased-distilled-squad"

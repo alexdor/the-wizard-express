@@ -2,41 +2,88 @@
 import sys
 from multiprocessing import cpu_count
 from os import environ
+from typing import Any, Callable, List, Tuple, Union
 
 import click
-from the_wizard_express.reader import RealmReader
-from the_wizard_express.retriever import TFIDFRetriever
-from the_wizard_express.tokenizer import WordTokenizer
 
 from .config import Config
-from .corpus import TriviaQA
+from .corpus import Squad, TriviaQA
+from .reader import RealmReader, TinyBertReader
+from .retriever import TFIDFRetriever
+from .tokenizer import WordTokenizer
 
 
 @click.group()
-@click.option("--debug/--no-debug", default=False)
+@click.option("--debug/--no-debug", default=Config.debug)
+@click.option("--max-proc", default=Config.max_proc_to_use, show_default=True, type=int)
 @click.option(
-    "--max-proc", default=min(cpu_count() - 1, 15), show_default=True, type=int
+    "--data_to_keep",
+    default=Config.percent_of_data_to_keep,
+    show_default=True,
+    type=float,
 )
-def main(debug, max_proc):
+@click.option("--vocab-size", default=Config.vocab_size, show_default=True, type=int)
+def main(debug, max_proc, data_to_keep, vocab_size):
     Config.debug = debug
     Config.max_proc_to_use = max_proc
+    Config.percent_of_data_to_keep = data_to_keep
+    Config.vocab_size = vocab_size
+
+
+def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
+    return [(obj.friendly_name, obj) for obj in objects]
+
+
+retrievers = option_to_type([TFIDFRetriever])
+readers = option_to_type((RealmReader, TinyBertReader))
+corpuses = option_to_type((TriviaQA, Squad))
+tokenizers = option_to_type([WordTokenizer])
+
+
+def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
+    return lambda _, selection: next(
+        (values[1] for values in possible_values if values[0] == selection), None
+    )
 
 
 @main.command()
-def trivia():
-    corpus = TriviaQA(percent_of_data_to_keep=1)
-    tokenizer = WordTokenizer(corpus)
-    retriever = TFIDFRetriever(corpus=corpus, tokenizer=tokenizer)
-    train_point = corpus.get_train_data()[20]
+@click.option(
+    "--retriever",
+    type=click.Choice([item[0] for item in retrievers], case_sensitive=False),
+    default=retrievers[0][0],
+    callback=turn_user_selection_to_class(retrievers),
+)
+@click.option(
+    "--reader",
+    type=click.Choice([item[0] for item in readers], case_sensitive=False),
+    default=readers[0][0],
+    callback=turn_user_selection_to_class(readers),
+)
+@click.option(
+    "--corpus",
+    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
+    default=corpuses[0][0],
+    callback=turn_user_selection_to_class(corpuses),
+)
+@click.option(
+    "--tokenizer",
+    type=click.Choice([item[0] for item in tokenizers], case_sensitive=False),
+    default=tokenizers[0][0],
+    callback=turn_user_selection_to_class(tokenizers),
+)
+def eval(retriever, reader, corpus, tokenizer):
+    corpus_instance = corpus()
+    tokenizer_instance = tokenizer(corpus_instance)
+    retriever_instance = retriever(corpus=corpus_instance, tokenizer=tokenizer_instance)
+    reader_instance = reader(tokenizer=tokenizer_instance)
+
+    train_point = corpus_instance.get_train_data()[20]
     question = train_point["question"]
-    docs = retriever.retrieve_docs(question, 3)
+    docs = retriever_instance.retrieve_docs(question, 15)
     found_documents = train_point["context"] in docs
     if not found_documents:
         docs += tuple([train_point["context"]])
-    # for d in docs:
-    answer = RealmReader(tokenizer=tokenizer).answer(
-        question=question, document=train_point["context"]
-    )
+    answer = reader_instance.answer(question=question, document="\n".join(docs))
     print("\n" * 10)
     print(f"Question: {question}")
     print(f"Expected answer: {train_point['answer']}")

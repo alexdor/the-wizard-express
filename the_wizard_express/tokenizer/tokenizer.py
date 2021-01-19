@@ -37,15 +37,15 @@ class Tokenizer(ABC):
 
     def encode(
         self,
-        sentances: str,
+        sentences: str,
         text_pair: Optional[Union[str, List[str], List[int]]] = None,
     ) -> Encoding:
-        return self.tokenizer.encode(sentances, text_pair)
+        return self.tokenizer.encode(sentences, text_pair)
 
-    def encode_batch(self, sentances: List[str]) -> List[Encoding]:
-        return self.tokenizer.encode_batch(sentances)
+    def encode_batch(self, sentences: List[str]) -> List[Encoding]:
+        return self.tokenizer.encode_batch(sentences)
 
-    def tokens_to_sentance(self, tokens: List[int]) -> str:
+    def tokens_to_sentence(self, tokens: List[int]) -> str:
         return self.tokenizer.decode(tokens)
 
     def decode_batch(self, tokens: List[List[int]]) -> str:

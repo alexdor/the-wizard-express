@@ -1,9 +1,15 @@
 import sys
 from abc import ABC, abstractclassmethod
 from operator import itemgetter
-from typing import List, Optional, Tuple, Union
+from os.path import dirname, lexists
+from pathlib import Path
+from pickle import load
+from typing import List, Tuple, Union
 
 from datasets import Dataset
+from the_wizard_express.config import Config
+
+from ..utils import DatasetDict, pickle_and_save_to_file
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -22,49 +28,64 @@ class DataType(TypedDict):
 RawDataset = Union[List[DataType], Dataset]
 
 
-class DatasetDict(TypedDict):
-    train: Dataset
-    test: Dataset
-    validation: Dataset
-
-
 class Corpus(ABC):
     """
     Abstract class for all the corpus
     """
 
+    _corpus: Tuple[str]
+    _corpus_path: str
+
     @property
     def corpus(self):
-        if not self._corpus:
-            self._build_corpus()
+        if not hasattr(self, "_corpus") or len(self._corpus) == 0:
+            if lexists(self._corpus_path):
+                self._corpus = load(open(self._corpus_path, "rb"))
+            else:
+                self._build_corpus()
+                pickle_and_save_to_file(self._corpus, self._corpus_path)
         return self._corpus
-
-    _corpus: Tuple[str] = tuple()
-    percent_of_data_to_keep = 1.0
 
     @abstractclassmethod
     def _build_corpus(self) -> None:
         pass
 
-    @abstractclassmethod
     def save_to_disk(self, file_location: str) -> None:
-        pass
+        Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
+        with open(file_location, "w+", encoding="utf-8") as f:
+            f.writelines([f"{line}\n" for line in self.corpus])
 
     def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
         return itemgetter(*indexes)(Corpus.corpus.__get__(self))
 
     def get_id(self) -> str:
-        return f"{self.__class__.__name__}{self.percent_of_data_to_keep}"
+        return f"{self.__class__.__name__}{Config.percent_of_data_to_keep}"
 
 
 class TrainTestDataset(ABC):
-    dataset: DatasetDict = None
+
+    _dataset: DatasetDict
+    _dataset_path: str
+
+    @property
+    def dataset(self) -> DatasetDict:
+        if not hasattr(self, "_dataset") or not self._dataset:
+            if lexists(self._dataset_path):
+                self._dataset = load(open(self._dataset_path, "rb"))
+            else:
+                self._build_dataset()
+                pickle_and_save_to_file(self._dataset, self._dataset_path)
+        return self._dataset
+
+    @abstractclassmethod
+    def _build_dataset(self) -> None:
+        pass
 
     def get_train_data(self) -> RawDataset:
-        return self.dataset["train"]
+        return TrainTestDataset.dataset.__get__(self)["train"]
 
     def get_test_data(self) -> RawDataset:
-        return self.dataset["test"]
+        return TrainTestDataset.dataset.__get__(self)["test"]
 
     def get_validation_data(self) -> RawDataset:
-        return self.dataset["validation"]
+        return TrainTestDataset.dataset.__get__(self)["validation"]

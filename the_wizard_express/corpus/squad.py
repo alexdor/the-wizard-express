@@ -10,15 +10,14 @@ from ..utils import (
 from .corpus import Corpus, TrainTestDataset
 
 
-class TriviaQA(Corpus, TrainTestDataset):
+class Squad(Corpus, TrainTestDataset):
     __slots__ = (
         "corpus_path",
         "dataset_path",
-        "percent_of_data_to_keep",
         "_corpus",
         "_dataset",
     )
-    friendly_name = "triviaqa"
+    friendly_name = "squad"
 
     def __init__(self) -> None:
         self._corpus_path = generate_cache_path("corpus", self)
@@ -26,39 +25,32 @@ class TriviaQA(Corpus, TrainTestDataset):
 
     def _build_dataset(self):
         dataset = load_dataset(
-            "trivia_qa",
-            "rc",
+            "squad",
             cache_dir=Config.cache_dir,
         )
 
         dataset = dataset.filter(
-            lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
+            lambda row: len(row["context"]) > 0,
             num_proc=Config.max_proc_to_use,
         )
-
         dataset = select_part_of_dataset(dataset)
 
         self._dataset = dataset.map(
             lambda data: {
                 "question": data["question"],
-                "answer": data["answer"]["value"],
-                "context": "\n".join(data["entity_pages"]["wiki_context"]),
+                "answer": data["answers"]["text"][0],
+                "context": data["context"],
             },
-            remove_columns=[
-                "question_id",
-                "question_source",
-                "entity_pages",
-                "search_results",
-            ],
+            remove_columns=["id", "title", "answers"],
             num_proc=Config.max_proc_to_use,
         )
+        pickle_and_save_to_file(self._dataset, self._dataset_path)
 
     def _build_corpus(self) -> None:
 
         dataset = concatenate_datasets(
             (
                 self.dataset["train"],
-                self.dataset["test"],
                 self.dataset["validation"],
             )
         )
@@ -72,4 +64,5 @@ class TriviaQA(Corpus, TrainTestDataset):
             num_proc=Config.max_proc_to_use,
         )
         dataset = sort(unique(dataset._data.column("context").to_numpy()))
+        pickle_and_save_to_file(dataset, self._corpus_path)
         self._corpus = dataset

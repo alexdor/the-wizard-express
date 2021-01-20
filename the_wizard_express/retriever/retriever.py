@@ -27,9 +27,7 @@ class Retriever(ABC):
     def __init__(self, corpus: Corpus, tokenizer: Tokenizer) -> None:
         self.corpus = corpus
         self.tokenizer = tokenizer
-        self.retriever_path = generate_cache_path(
-            "retriever", corpus, tokenizer, self, file_ending=".pickle"
-        )
+        self.retriever_path = generate_cache_path("retriever", corpus, tokenizer, self)
 
         if lexists(self.retriever_path):
             self._load_from_file()

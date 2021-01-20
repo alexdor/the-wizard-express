@@ -59,7 +59,7 @@ class Corpus(ABC):
         return itemgetter(*indexes)(Corpus.corpus.__get__(self))
 
     def get_id(self) -> str:
-        return f"{self.__class__.__name__}{Config.percent_of_data_to_keep}"
+        return f"{self.__class__.__name__}_{Config.percent_of_data_to_keep}"
 
 
 class TrainTestDataset(ABC):

@@ -30,7 +30,7 @@ def generate_cache_path(name: str, *args, **kwargs):
         "_".join([c.get_id() for c in args])
         + f"_{inflect_engine.singular_noun(name) or name}"
         + ("" if kwargs.get("skip_vocab_size") else f"_{Config.vocab_size}")
-        + (kwargs["file_ending"] if kwargs.get("file_ending") else ".json"),
+        + (kwargs["file_ending"] if kwargs.get("file_ending") else ".pickle"),
     )
 
 

@@ -38,6 +38,9 @@ class _Config:
 
     @percent_of_data_to_keep.setter
     def percent_of_data_to_keep(self, value: float) -> None:
+        value = float(value)
+        if value > 1.0:
+            value = value / 100.0
         self._percent_of_data_to_keep = value
 
     vocab_size = 8000

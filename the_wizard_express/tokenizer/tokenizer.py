@@ -6,7 +6,7 @@ from tokenizers import Encoding
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 
 from ..corpus.corpus import Corpus
-from ..utils import generate_cache_path, pickle_and_save_to_file
+from ..utils import generate_cache_path
 
 
 class Tokenizer(ABC):
@@ -14,14 +14,15 @@ class Tokenizer(ABC):
         return self.__class__.__name__
 
     def __init__(self, corpus: Corpus) -> None:
-        self._tokenizer_path = generate_cache_path("tokenizer", corpus, self)
+        self._tokenizer_path = generate_cache_path(
+            "tokenizer", corpus, self, file_ending=".json"
+        )
 
         if lexists(self._tokenizer_path):
             self._load_from_file(self._tokenizer_path)
             return
         print(f"Buidling {self.friendly_name} tokenizer")
         self._build(corpus, self._tokenizer_path)
-        pickle_and_save_to_file(self.tokenizer, self._tokenizer_path)
 
     @abstractclassmethod
     def _build(self, corpus: Corpus, path_to_save: str) -> None:

@@ -35,9 +35,7 @@ class WordTokenizer(Tokenizer):
     friendly_name = "word"
 
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
-        vocab_path = generate_cache_path(
-            "vocab", self, corpus, skip_vocab_size=True, file_ending=".pickle"
-        )
+        vocab_path = generate_cache_path("vocab", self, corpus, skip_vocab_size=True)
         vocab = (
             Counter(load(open(vocab_path, "rb"))).most_common(Config.vocab_size)
             if lexists(vocab_path)

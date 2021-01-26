@@ -54,3 +54,6 @@ class Tokenizer(ABC):
 
     def get_vocab(self) -> Dict[str, int]:
         return self.tokenizer.get_vocab()
+
+    def __call__(self, text, text_pair, **kwargs):
+        return self.tokenizer(text, text_pair, **kwargs)

@@ -2,11 +2,7 @@ from datasets import concatenate_datasets, load_dataset
 from numpy import sort, unique
 
 from ..config import Config
-from ..utils import (
-    generate_cache_path,
-    pickle_and_save_to_file,
-    select_part_of_dataset,
-)
+from ..utils import generate_cache_path, select_part_of_dataset
 from .corpus import Corpus, TrainTestDataset
 
 
@@ -34,6 +30,7 @@ class TriviaQA(Corpus, TrainTestDataset):
         dataset = dataset.filter(
             lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
             num_proc=Config.max_proc_to_use,
+            cache_file_name=f"{self.friendly_name}_filter",
         )
 
         dataset = select_part_of_dataset(dataset)
@@ -51,6 +48,7 @@ class TriviaQA(Corpus, TrainTestDataset):
                 "search_results",
             ],
             num_proc=Config.max_proc_to_use,
+            cache_file_name=f"{self.friendly_name}_map",
         )
 
     def _build_corpus(self) -> None:

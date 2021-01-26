@@ -123,7 +123,8 @@ class RealmReader(Reader):
         # TODO
         return self._build()
 
-    def answer(self, question: str, document: str) -> str:
+    def answer(self, question: str, documents: List[str]) -> str:
+        document = "\n".join(documents)
         model_inputs = self.tokenizer(
             question, document, add_special_tokens=True, return_tensors="pt"
         )
@@ -153,7 +154,9 @@ class RealmReader(Reader):
             answer += (
                 f"{partial_answer} " if not Config.debug else f"{partial_answer} / "
             )
-        return answer[:-1]
+
+        # Drop whitespace from begining and end
+        return answer.strip()
 
         # inputs["to"]
 

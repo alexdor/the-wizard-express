@@ -1,4 +1,5 @@
 import sys
+from json import dumps
 from os.path import dirname, join
 from pathlib import Path
 from pickle import HIGHEST_PROTOCOL, dump
@@ -52,9 +53,3 @@ def select_part_of_dataset(dataset: DatasetDict) -> DatasetDict:
     dataset["test"] = select_part(dataset["test"])
     dataset["validation"] = select_part(dataset["validation"])
     return dataset
-
-
-def find_vocab_words_by_indexes(vocab, indexes: List[int]):
-    keys = list(vocab.keys())
-    values = list(vocab.values())
-    return [keys[values.index(i)] for i in indexes]

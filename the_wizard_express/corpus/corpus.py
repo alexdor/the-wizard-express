@@ -9,8 +9,8 @@ from pickle import load
 from typing import List, Tuple, Union
 
 from datasets import Dataset
-from the_wizard_express.config import Config
 
+from ..config import Config
 from ..utils import DatasetDict, pickle_and_save_to_file
 
 if sys.version_info >= (3, 8):

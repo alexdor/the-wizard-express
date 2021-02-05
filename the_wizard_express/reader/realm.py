@@ -13,7 +13,7 @@ from torch import (
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
 from ..config import Config
-from .reader import Reader
+from . import Reader
 
 
 class RealmReader(Reader):

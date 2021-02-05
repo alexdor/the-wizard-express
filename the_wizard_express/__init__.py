@@ -1,6 +1,6 @@
 """Top-level package for The wizard express."""
 
-__author__ = """Alexandros Dorodoulis, Amalia Matei, Jesper Lund Petersen"""
+__author__ = """Alexandros Dorodoulis, Amalia Matei """
 __email__ = ""
 __version__ = "0.0.1"
 __all__ = [
@@ -11,6 +11,6 @@ __all__ = [
     "reader",
     "retriever",
     "cli",
-    "datasets",
+    "tokenizer",
     "utils",
 ]

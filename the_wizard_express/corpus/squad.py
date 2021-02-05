@@ -7,7 +7,7 @@ from ..utils import (
     pickle_and_save_to_file,
     select_part_of_dataset,
 )
-from .corpus import Corpus, TrainTestDataset
+from . import Corpus, TrainTestDataset
 
 
 class Squad(Corpus, TrainTestDataset):

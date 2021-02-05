@@ -86,7 +86,7 @@ class TFIDFRetriever(Retriever):
         return self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0])
 
     def _build(self) -> None:
-        vocab = self.tokenizer.get_vocab()
+        vocab = self.tokenizer.vocab
 
         encoded_corpus = tuple(self.tokenizer.encode_batch(self.corpus.corpus))
         encoded_special_tokens = {vocab[token] for token in Config.special_tokens_list}

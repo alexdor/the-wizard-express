@@ -1,6 +1,8 @@
 import sys
 from abc import ABC, abstractclassmethod
+from errno import ENOENT
 from operator import itemgetter
+from os import strerror
 from os.path import dirname, lexists
 from pathlib import Path
 from pickle import load
@@ -70,9 +72,11 @@ class TrainTestDataset(ABC):
     @property
     def dataset(self) -> DatasetDict:
         if not hasattr(self, "_dataset") or not self._dataset:
-            if lexists(self._dataset_path):
+            try:
+                if lexists(self._dataset_path):
+                    raise FileNotFoundError
                 self._dataset = load(open(self._dataset_path, "rb"))
-            else:
+            except FileNotFoundError:
                 self._build_dataset()
                 pickle_and_save_to_file(self._dataset, self._dataset_path)
         return self._dataset

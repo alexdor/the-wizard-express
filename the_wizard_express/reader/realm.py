@@ -1,15 +1,7 @@
 from typing import List
 
-from torch import (
-    bool,
-    cat,
-    masked_select,
-    ones,
-    split,
-    tensor,
-    unsqueeze,
-    zeros,
-)
+from torch import bool as torch_bool
+from torch import cat, masked_select, ones, split, tensor, unsqueeze, zeros
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
 from ..config import Config
@@ -102,9 +94,10 @@ class RealmReader(Reader):
         tokenized_question_len = len(self.tokenizer(question)["input_ids"])
         question_mask = cat(
             (
-                ones(tokenized_question_len, dtype=bool),
+                ones(tokenized_question_len, dtype=torch_bool),
                 zeros(
-                    inputs["input_ids"].shape[1] - tokenized_question_len, dtype=bool
+                    inputs["input_ids"].shape[1] - tokenized_question_len,
+                    dtype=torch_bool,
                 ),
             )
         )

@@ -10,8 +10,15 @@
       "request": "launch",
       "module": "the_wizard_express",
       "args": [
-        "trivia"
+        "dev"
       ]
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
     }
   ]
 }

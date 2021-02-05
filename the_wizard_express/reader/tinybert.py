@@ -84,24 +84,24 @@ class TinyBertReader(Reader):
                 if ans != "[CLS]":
                     answer += ans + " / "
             return answer
-        else:
-            res = self.model(**self.inputs)
-            answer_start_scores, answer_end_scores = res
-            answer_start_scores, answer_end_scores = (
-                res[answer_start_scores],
-                res[answer_end_scores],
-            )
 
-            answer_start = argmax(
-                answer_start_scores
-            )  # get the most likely beginning of answer with the argmax of the score
-            answer_end = (
-                argmax(answer_end_scores) + 1
-            )  # get the most likely end of answer with the argmax of the score
+        res = self.model(**self.inputs)
+        answer_start_scores, answer_end_scores = res
+        answer_start_scores, answer_end_scores = (
+            res[answer_start_scores],
+            res[answer_end_scores],
+        )
 
-            return self._convert_ids_to_string(
-                self.inputs["input_ids"][0][answer_start:answer_end]
-            )
+        answer_start = argmax(
+            answer_start_scores
+        )  # get the most likely beginning of answer with the argmax of the score
+        answer_end = (
+            argmax(answer_end_scores) + 1
+        )  # get the most likely end of answer with the argmax of the score
+
+        return self._convert_ids_to_string(
+            self.inputs["input_ids"][0][answer_start:answer_end]
+        )
 
     def _convert_ids_to_string(self, input_ids):
         return self.tokenizer.convert_tokens_to_string(

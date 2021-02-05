@@ -4,7 +4,7 @@ from typing import List
 from torch import argmax, cat, masked_select, split, tensor, unsqueeze
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
-from .reader import Reader
+from . import Reader
 
 
 class TinyBertReader(Reader):

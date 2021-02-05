@@ -3,7 +3,7 @@ from numpy import sort, unique
 
 from ..config import Config
 from ..utils import generate_cache_path, select_part_of_dataset
-from .corpus import Corpus, TrainTestDataset
+from . import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):

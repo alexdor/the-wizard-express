@@ -30,7 +30,7 @@ setup_requirements = []
 
 
 setup(
-    author="Alexandros Dorodoulis, Amalia Matei, Jesper Lund Petersen",
+    author="Alexandros Dorodoulis, Amalia Matei",
     author_email="",
     python_requires=">=3.6",
     classifiers=[

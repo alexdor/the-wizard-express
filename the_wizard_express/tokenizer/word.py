@@ -24,8 +24,8 @@ from tqdm import tqdm
 
 from ..config import Config
 from ..corpus.corpus import Corpus
-from ..tokenizer import Tokenizer
 from ..utils import generate_cache_path, pickle_and_save_to_file
+from . import Tokenizer
 
 nltk_data_path = join(Config.cache_dir, "nltk")
 data.path.append(nltk_data_path)

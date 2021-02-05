@@ -52,7 +52,8 @@ class Tokenizer(ABC):
     def decode_batch(self, tokens: List[List[int]]) -> str:
         return self.tokenizer.decode_batch(tokens)
 
-    def get_vocab(self) -> Dict[str, int]:
+    @property
+    def vocab(self) -> Dict[str, int]:
         return self.tokenizer.get_vocab()
 
     def __call__(self, text, text_pair, **kwargs):

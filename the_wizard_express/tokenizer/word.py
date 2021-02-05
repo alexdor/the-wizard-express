@@ -76,8 +76,7 @@ class WordTokenizer(Tokenizer):
     def _prep_vocab(sentance_list) -> CounterType[str]:
         stop_words = set(stopwords.words("english"))
 
-        # We are droping the stop words and everything that isn't a string
-        # we might need to reconsider the numbers if we increase our vocab
+        # Remove the stop words and everything that isn't a string
         return Counter(
             (
                 token
@@ -85,6 +84,23 @@ class WordTokenizer(Tokenizer):
                 for sentance in sent_tokenize(sentance.lower())
                 for token in word_tokenize(sentance)
                 if token.isalpha() and token not in stop_words
+            )
+        )
+
+
+class WordTokenizerWithStopWords(WordTokenizer):
+    friendly_name = "word_with_stop_words"
+
+    @staticmethod
+    def _prep_vocab(sentance_list) -> CounterType[str]:
+        # Remove everything that isn't a string
+        return Counter(
+            (
+                token
+                for sentance in sentance_list
+                for sentance in sent_tokenize(sentance.lower())
+                for token in word_tokenize(sentance)
+                if token.isalpha()
             )
         )
 

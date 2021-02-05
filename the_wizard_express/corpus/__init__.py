@@ -1,3 +1,3 @@
-from .corpus import Corpus
-from .triviaqa import TriviaQA
+from .corpus import Corpus, TrainTestDataset
 from .squad import Squad
+from .triviaqa import TriviaQA

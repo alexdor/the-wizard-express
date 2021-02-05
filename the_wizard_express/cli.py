@@ -71,7 +71,7 @@ def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
     default=tokenizers[0][0],
     callback=turn_user_selection_to_class(tokenizers),
 )
-def eval(retriever, reader, corpus, tokenizer):
+def dev(retriever, reader, corpus, tokenizer):
     corpus_instance = corpus()
     tokenizer_instance = tokenizer(corpus_instance)
     retriever_instance = retriever(corpus=corpus_instance, tokenizer=tokenizer_instance)

@@ -36,7 +36,7 @@ def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
 
 retrievers = option_to_type([TFIDFRetriever])
 readers = option_to_type((RealmReader, TinyBertReader))
-corpuses = option_to_type((TriviaQA, Squad))
+corpuses = option_to_type((Squad, TriviaQA))
 tokenizers = option_to_type([WordTokenizer])
 
 
@@ -79,17 +79,16 @@ def eval(retriever, reader, corpus, tokenizer):
 
     train_point = corpus_instance.get_train_data()[20]
     question = train_point["question"]
-    docs = retriever_instance.retrieve_docs(question, 15)
+    docs = retriever_instance.retrieve_docs(question, 5)
     found_documents = train_point["context"] in docs
     if not found_documents:
         docs += tuple([train_point["context"]])
-    answer = reader_instance.answer(question=question, document="\n".join(docs))
+    answer = reader_instance.answer(question=question, documents=docs)
     print("\n" * 10)
     print(f"Question: {question}")
     print(f"Expected answer: {train_point['answer']}")
     print(f"Retrived proper document: {found_documents}")
-    print("Model's answer:")
-    print(answer)
+    print(f"Model's answer: {answer}")
     return 0
 
 

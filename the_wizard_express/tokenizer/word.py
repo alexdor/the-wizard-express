@@ -3,7 +3,8 @@ from multiprocessing import Pool
 from os.path import dirname, join, lexists
 from pathlib import Path
 from pickle import load
-from typing import Dict, Optional, Union
+from typing import Counter as CounterType
+from typing import Dict, List, Optional, Tuple, Union
 
 from nltk import data, download
 from nltk.corpus import stopwords
@@ -36,7 +37,7 @@ class WordTokenizer(Tokenizer):
 
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
         vocab_path = generate_cache_path("vocab", self, corpus, skip_vocab_size=True)
-        vocab = (
+        vocab: List[Tuple[str, int]] = (
             Counter(load(open(vocab_path, "rb"))).most_common(Config.vocab_size)
             if lexists(vocab_path)
             else self._build_vocab(corpus, vocab_path)
@@ -51,11 +52,11 @@ class WordTokenizer(Tokenizer):
         )
         self.tokenizer = WordLevelBertTokenizer(vocab)
 
-    def _build_vocab(self, corpus: Corpus, vocab_path: str):
+    def _build_vocab(self, corpus: Corpus, vocab_path: str) -> List[Tuple[str, int]]:
         download("punkt", download_dir=nltk_data_path)
         download("stopwords", download_dir=nltk_data_path)
 
-        cor, c, batch_size = corpus.corpus, Counter(), 100
+        cor, counter, batch_size = corpus.corpus, Counter(), 100
 
         with tqdm(total=len(cor)) as pbar:
             with Pool(Config.max_proc_to_use) as pool:
@@ -66,13 +67,13 @@ class WordTokenizer(Tokenizer):
                     ),
                 ):
                     pbar.update(batch_size)
-                    c += res
+                    counter += res
         Path(dirname(vocab_path)).mkdir(parents=True, exist_ok=True)
-        pickle_and_save_to_file(c, vocab_path)
-        return c.most_common(Config.vocab_size)
+        pickle_and_save_to_file(counter, vocab_path)
+        return counter.most_common(Config.vocab_size)
 
     @staticmethod
-    def _prep_vocab(sentance_list) -> Counter:
+    def _prep_vocab(sentance_list) -> CounterType[str]:
         stop_words = set(stopwords.words("english"))
 
         # We are droping the stop words and everything that isn't a string

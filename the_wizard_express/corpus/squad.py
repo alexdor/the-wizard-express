@@ -32,7 +32,6 @@ class Squad(Corpus, TrainTestDataset):
         dataset = dataset.filter(
             lambda row: len(row["context"]) > 0,
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_filter",
         )
         dataset = select_part_of_dataset(dataset)
 
@@ -44,7 +43,6 @@ class Squad(Corpus, TrainTestDataset):
             },
             remove_columns=["id", "title", "answers"],
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_{Config.percent_of_data_to_keep}_map",
         )
         pickle_and_save_to_file(self._dataset, self._dataset_path)
 
@@ -64,7 +62,6 @@ class Squad(Corpus, TrainTestDataset):
                 "answer",
             ],
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_{Config.percent_of_data_to_keep}_dataset",
         )
         dataset = sort(unique(dataset._data.column("context").to_numpy()))
         pickle_and_save_to_file(dataset, self._corpus_path)

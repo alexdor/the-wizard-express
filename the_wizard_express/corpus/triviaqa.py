@@ -30,7 +30,6 @@ class TriviaQA(Corpus, TrainTestDataset):
         dataset = dataset.filter(
             lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_filter",
         )
 
         dataset = select_part_of_dataset(dataset)
@@ -48,7 +47,6 @@ class TriviaQA(Corpus, TrainTestDataset):
                 "search_results",
             ],
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_{Config.percent_of_data_to_keep}_map",
         )
 
     def _build_corpus(self) -> None:
@@ -68,7 +66,6 @@ class TriviaQA(Corpus, TrainTestDataset):
                 "answer",
             ],
             num_proc=Config.max_proc_to_use,
-            cache_file_name=f"{self.friendly_name}_{Config.percent_of_data_to_keep}_dataset",
         )
         dataset = sort(unique(dataset._data.column("context").to_numpy()))
         self._corpus = dataset

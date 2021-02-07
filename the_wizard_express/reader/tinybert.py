@@ -4,6 +4,7 @@ from typing import List
 from torch import argmax, cat, masked_select, split, tensor, unsqueeze
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
+from ..config import Config
 from . import Reader
 
 
@@ -12,8 +13,15 @@ class TinyBertReader(Reader):
 
     def _build(self) -> None:
         model_to_use = "bert-large-uncased"
-        self.model = AutoModelForQuestionAnswering.from_pretrained(model_to_use)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_to_use)
+        self.model = AutoModelForQuestionAnswering.from_pretrained(
+            model_to_use,
+            cache_dir=Config.cache_dir,
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_to_use,
+            use_fast=True,
+            cache_dir=Config.cache_dir,
+        )
         self.max_len = self.model.config.max_position_embeddings
         self.chunked = False
 

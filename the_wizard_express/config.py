@@ -1,5 +1,5 @@
 from multiprocessing import cpu_count
-from os import getenv, path
+from os import environ, getenv, path
 from typing import List
 
 
@@ -9,12 +9,12 @@ class _Config:
     """
 
     def __init__(self):
-        self._debug = False
-        self._proc = min(cpu_count() - 1, 15)
-        self._percent_of_data_to_keep = 1.0
+        self.debug = False
+        self.max_proc_to_use = min(cpu_count() - 1, 15)
+        self.percent_of_data_to_keep = 1.0
 
-    cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
     """Config.cache_dir The cache directory to store models and other temporary files"""
+    cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
 
     @property
     def debug(self) -> bool:
@@ -30,6 +30,7 @@ class _Config:
 
     @max_proc_to_use.setter
     def max_proc_to_use(self, value: int) -> None:
+        environ["RAYON_RS_NUM_CPUS"] = str(value)
         self._proc = value
 
     @property

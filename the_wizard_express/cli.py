@@ -8,7 +8,7 @@ import click
 
 from .config import Config
 from .corpus import Squad, TriviaQA
-from .reader import RealmReader, TinyBertReader
+from .reader import BertOnBertReader, SimpleBertReader, TinyBertReader
 from .retriever import TFIDFRetriever
 from .tokenizer import WordTokenizer, WordTokenizerWithStopWords
 
@@ -35,7 +35,7 @@ def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
 
 
 retrievers = option_to_type([TFIDFRetriever])
-readers = option_to_type((RealmReader, TinyBertReader))
+readers = option_to_type((BertOnBertReader, TinyBertReader, SimpleBertReader))
 corpuses = option_to_type((Squad, TriviaQA))
 tokenizers = option_to_type((WordTokenizer, WordTokenizerWithStopWords))
 

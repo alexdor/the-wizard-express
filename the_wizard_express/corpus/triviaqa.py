@@ -2,23 +2,24 @@ from datasets import concatenate_datasets, load_dataset
 from numpy import sort, unique
 
 from ..config import Config
-from ..utils import generate_cache_path, select_part_of_dataset
+from ..utils import select_part_of_dataset
 from . import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):
     __slots__ = (
         "corpus_path",
-        "dataset_path",
+        "_dataset_path",
         "percent_of_data_to_keep",
         "_corpus",
         "_dataset",
     )
+
     friendly_name = "triviaqa"
 
     def __init__(self) -> None:
-        self._corpus_path = generate_cache_path("corpus", self)
-        self._dataset_path = generate_cache_path("dataset", self)
+        super().__init__()
+        TrainTestDataset.__init__(self)
 
     def _build_dataset(self):
         dataset = load_dataset(

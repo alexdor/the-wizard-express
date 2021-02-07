@@ -9,6 +9,7 @@ from pickle import load
 from typing import List, Tuple, Union
 
 from datasets import Dataset
+from the_wizard_express.utils.utils import generate_cache_path
 
 from ..config import Config
 from ..utils import DatasetDict, pickle_and_save_to_file
@@ -38,6 +39,9 @@ class Corpus(ABC):
     _corpus: Tuple[str]
     _corpus_path: str
 
+    def __init__(self) -> None:
+        self._corpus_path = generate_cache_path("corpus", self)
+
     @property
     def corpus(self):
         if not hasattr(self, "_corpus") or len(self._corpus) == 0:
@@ -65,9 +69,11 @@ class Corpus(ABC):
 
 
 class TrainTestDataset(ABC):
-
     _dataset: DatasetDict
     _dataset_path: str
+
+    def __init__(self) -> None:
+        self._dataset_path = generate_cache_path("dataset", self)
 
     @property
     def dataset(self) -> DatasetDict:

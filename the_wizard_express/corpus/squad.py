@@ -2,26 +2,23 @@ from datasets import concatenate_datasets, load_dataset
 from numpy import sort, unique
 
 from ..config import Config
-from ..utils import (
-    generate_cache_path,
-    pickle_and_save_to_file,
-    select_part_of_dataset,
-)
+from ..utils import select_part_of_dataset
 from . import Corpus, TrainTestDataset
 
 
 class Squad(Corpus, TrainTestDataset):
     __slots__ = (
         "corpus_path",
-        "dataset_path",
+        "_dataset_path",
         "_corpus",
         "_dataset",
     )
+
     friendly_name = "squad"
 
     def __init__(self) -> None:
-        self._corpus_path = generate_cache_path("corpus", self)
-        self._dataset_path = generate_cache_path("dataset", self)
+        super().__init__()
+        TrainTestDataset.__init__(self)
 
     def _build_dataset(self):
         dataset = load_dataset(
@@ -44,7 +41,6 @@ class Squad(Corpus, TrainTestDataset):
             remove_columns=["id", "title", "answers"],
             num_proc=Config.max_proc_to_use,
         )
-        pickle_and_save_to_file(self._dataset, self._dataset_path)
 
     def _build_corpus(self) -> None:
 
@@ -64,5 +60,4 @@ class Squad(Corpus, TrainTestDataset):
             num_proc=Config.max_proc_to_use,
         )
         dataset = sort(unique(dataset._data.column("context").to_numpy()))
-        pickle_and_save_to_file(dataset, self._corpus_path)
         self._corpus = dataset

@@ -8,16 +8,10 @@ from ..config import Config
 from . import Reader
 
 
-class RealmReader(Reader):
-    friendly_name = "realm"
+class BertOnBertReader(Reader):
+    friendly_name = "bert-plus"
 
     def _build(self) -> None:
-        # self.tokenizer = DistilBertTokenizerFast.from_pretrained(
-        #     "distilbert-base-uncased-distilled-squad"
-        # )
-        # self.model = DistilBertModel.from_pretrained(
-        #     "distilbert-base-uncased-distilled-squad"
-        # )
         # model = "bert-base-uncased"
         model = "distilbert-base-cased-distilled-squad"
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -136,3 +130,10 @@ class RealmReader(Reader):
         return self.tokenizer.convert_tokens_to_string(
             self.tokenizer.convert_ids_to_tokens(input_ids)
         )
+
+
+class SimpleBertReader(BertOnBertReader):
+    friendly_name = "bert"
+
+    def answer(self, question: str, documents: List[str]) -> str:
+        return self._get_partial_answer(question, "\n".join(documents))

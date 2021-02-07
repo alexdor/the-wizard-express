@@ -23,12 +23,16 @@ class Tokenizer(ABC):
             return
         print(f"Buidling {self.friendly_name} tokenizer")
         self._build(corpus, self._tokenizer_path)
+        self._save_tokenizer()
 
     @abstractclassmethod
     def _build(self, corpus: Corpus, path_to_save: str) -> None:
         """
         A method that creates a tokenizer from a given corpus
         """
+
+    def _save_tokenizer(self) -> None:
+        self.tokenizer.save(self._tokenizer_path)
 
     def _load_from_file(self, file: str) -> None:
         """

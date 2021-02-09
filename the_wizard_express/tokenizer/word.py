@@ -43,7 +43,7 @@ class WordTokenizer(Tokenizer):
             else self._build_vocab(corpus, vocab_path)
         )
 
-        vocab = {value: i for (i, (value, _)) in enumerate(vocab)}
+        vocab: Dict[str, int] = {value: i for (i, (value, _)) in enumerate(vocab)}
         vocab.update(
             {
                 value: i + len(vocab)

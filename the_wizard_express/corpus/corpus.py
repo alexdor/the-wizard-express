@@ -9,6 +9,8 @@ from pickle import load
 from typing import List, Tuple, Union
 
 from datasets import Dataset
+from numpy import sort, unique
+from pyarrow import array as arrow_array
 from the_wizard_express.utils.utils import generate_cache_path
 
 from ..config import Config
@@ -40,7 +42,7 @@ class Corpus(ABC):
     _corpus_path: str
 
     def __init__(self) -> None:
-        self._corpus_path = generate_cache_path("corpus", self)
+        self._corpus_path = generate_cache_path("corpus", self, skip_vocab_size=True)
 
     @property
     def corpus(self):
@@ -64,6 +66,18 @@ class Corpus(ABC):
     def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
         return itemgetter(*indexes)(Corpus.corpus.__get__(self))
 
+    def _transform_datasets_to_corpus(self, dataset, key="context"):
+        dataset = dataset.map(
+            lambda data: {key: data[key]},
+            remove_columns=[
+                "question",
+                "answer",
+            ],
+            num_proc=Config.max_proc_to_use,
+        )
+        dataset = arrow_array(sort(unique(dataset._data.column(key).to_numpy())))
+        self._corpus = dataset
+
     def get_id(self) -> str:
         return f"{self.__class__.__name__}_{Config.percent_of_data_to_keep}"
 
@@ -73,7 +87,7 @@ class TrainTestDataset(ABC):
     _dataset_path: str
 
     def __init__(self) -> None:
-        self._dataset_path = generate_cache_path("dataset", self)
+        self._dataset_path = generate_cache_path("dataset", self, skip_vocab_size=True)
 
     @property
     def dataset(self) -> DatasetDict:

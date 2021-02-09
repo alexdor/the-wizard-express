@@ -51,13 +51,4 @@ class Squad(Corpus, TrainTestDataset):
             )
         )
 
-        dataset = dataset.map(
-            lambda data: {"context": data["context"]},
-            remove_columns=[
-                "question",
-                "answer",
-            ],
-            num_proc=Config.max_proc_to_use,
-        )
-        dataset = sort(unique(dataset._data.column("context").to_numpy()))
-        self._corpus = dataset
+        self._transform_datasets_to_corpus(dataset)

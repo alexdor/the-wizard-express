@@ -1,7 +1,8 @@
-import gc
 from collections import Counter
+from itertools import chain
 from math import log10
 from multiprocessing import Pool
+from os.path import lexists
 from pickle import load
 from typing import Counter as CounterType
 from typing import Dict, Iterator, Tuple
@@ -36,7 +37,10 @@ class TFIDFRetriever(Retriever):
         ]
 
         # return the corpuses with the proper index
-        return self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0])
+        return tuple(
+            doc.as_py()
+            for doc in self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0])
+        )
 
     def _load_from_file(self) -> None:
         self.tf_idf = load(open(self.retriever_path, "rb"))
@@ -44,33 +48,44 @@ class TFIDFRetriever(Retriever):
     def _build(self) -> None:
         vocab = self.tokenizer.vocab
 
-        encoded_corpus = tuple(self.tokenizer.encode_batch(self.corpus.corpus))
+        encoded_corpus = chain.from_iterable(
+            self.tokenizer.encode_batch(chunk.tolist())
+            for chunk in self.corpus.corpus.iterchunks()
+        )
         encoded_special_tokens = {vocab[token] for token in Config.special_tokens_list}
         vocab_values = tuple(
             value for value in vocab.values() if value not in encoded_special_tokens
         )
-        corpus_length = len(encoded_corpus)
-        tf = empty((len(vocab_values), 0))
+
+        vocab_length = len(vocab_values)
+        corpus_length = len(self.corpus.corpus)
+        tf = empty((vocab_length, 0))
         chunksize = 300
         documents_with_word: CounterType[int] = Counter()
 
         corpus_iterator = self._get_iterator_for_corpus(
-            encoded_corpus, vocab_values, chunksize=chunksize
+            encoded_corpus, corpus_length, vocab_values, chunksize=chunksize
         )
 
         # Compute tf-idf for the full corpus
         with Pool(Config.max_proc_to_use) as pool:
+            first_loop_cache = f"{self.retriever_path}_tf_first_loop"
             # compute tf and word document frequency
-            with tqdm(total=corpus_length) as pbar:
-                for (tf_res, partial_documents_with_word) in pool.imap(
-                    func=TFIDFRetriever._create_tf_and_document_counter,
-                    iterable=corpus_iterator,
-                ):
-                    pbar.update(chunksize)
-                    documents_with_word += partial_documents_with_word
-                    tf = hstack((tf, tf_res))
+            if lexists(first_loop_cache):
+                (tf, documents_with_word) = load(open(first_loop_cache, "rb"))
+            else:
+                with tqdm(total=corpus_length) as pbar:
+                    for (tf_res, partial_documents_with_word) in pool.imap(
+                        func=TFIDFRetriever._create_tf_and_document_counter,
+                        iterable=corpus_iterator,
+                    ):
+                        pbar.update(chunksize)
+                        documents_with_word += partial_documents_with_word
+                        tf = hstack((tf, tf_res))
 
-            tf_idf = empty((corpus_length, len(vocab_values)))
+                pickle_and_save_to_file((tf, documents_with_word), first_loop_cache)
+
+            tf_idf = empty((corpus_length, vocab_length))
             tf_iterator = (
                 (doc_counter, tf[doc_counter[0]], corpus_length)
                 for doc_counter in documents_with_word.most_common()
@@ -81,6 +96,7 @@ class TFIDFRetriever(Retriever):
                 for (word_tf_idf, word_id) in pool.imap_unordered(
                     func=TFIDFRetriever._compute_tf_idf,
                     iterable=tf_iterator,
+                    chunksize=chunksize,
                 ):
                     pbar.update()
                     tf_idf[:, word_id] = word_tf_idf
@@ -88,47 +104,49 @@ class TFIDFRetriever(Retriever):
         tf_idf = csr_matrix(tf_idf)
         pickle_and_save_to_file(tf_idf, self.retriever_path)
         self.tf_idf = tf_idf
-        gc.collect()
 
     @staticmethod
     def _create_tf_and_document_counter(
         params: Tuple[Tuple[Encoding, ...], Tuple[int]]
     ) -> Tuple[ndarray, CounterType[int]]:
         (encoded_corpus, vocab_values) = params
-        document_counter: CounterType[int] = Counter()
+        document_counter: Dict[int, int] = {}
         tf = zeros((len(vocab_values), len(encoded_corpus)))
         for corpus_index, doc in enumerate(encoded_corpus):
             doc_len = len(doc)
             counter: CounterType[int] = Counter(doc.ids)
             for word_id in vocab_values:
                 if word_id in doc.ids:
-                    document_counter[word_id] += 1
+                    document_counter[word_id] = document_counter.get(word_id, 0) + 1
                 tf[word_id, corpus_index] = counter[word_id] / float(doc_len)
 
-        return (tf, document_counter)
+        return (tf, Counter(document_counter))
 
     @staticmethod
     def _compute_tf_idf(
         params: Tuple[Tuple[int, int], ndarray, int]
     ) -> Tuple[ndarray, int]:
-        ((document_count, word_id), tf, corpus_length) = params
-        tf_idf = empty((corpus_length))
-        idf = (
-            log10(corpus_length / float(document_count) + 1)
-            if document_count != 0
-            else 0
-        )
-        for corpus_index in range(len(tf)):
-            tf_idf[corpus_index] = tf[corpus_index] * idf
+        ((word_id, document_count), tf, corpus_length) = params
 
-        return (tf_idf, word_id)
+        if document_count == 0:
+            return (zeros((corpus_length)), word_id)
+
+        idf = log10(corpus_length / float(document_count) + 1)
+        return (idf * tf, word_id)
 
     def _get_iterator_for_corpus(
-        self, encoded_corpus: Tuple[Encoding, ...], vocab_values, chunksize=100
+        self,
+        encoded_corpus: Iterator[Tuple[Encoding, ...]],
+        corpus_length: int,
+        vocab_values,
+        chunksize=100,
     ) -> Iterator[Tuple[Tuple[Encoding, ...], Tuple[int]]]:
-        corpus_index = 0
-        for corpus_index in range(0, len(encoded_corpus), chunksize):
+        for current_chunk in range(0, corpus_length, chunksize):
             yield (
-                encoded_corpus[corpus_index : corpus_index + chunksize],
+                tuple(
+                    next(encoded_corpus)
+                    for i in range(chunksize)
+                    if current_chunk + i < corpus_length
+                ),
                 vocab_values,
             )

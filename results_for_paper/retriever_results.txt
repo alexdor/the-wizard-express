@@ -1,0 +1,33 @@
+{
+  "correctly_retrieved_documents": 1575,
+  "date": "09/02/2021 21:17:58",
+  "pretty_results": "Successfully retrieved 1575 out of 15541 documents",
+  "total_documents": 15541,
+  "data_it_run_on": "test_data",
+  "number_of_docs_to_retrieve": 5,
+    "correctly_retrieved":"10.13448298 %",
+  "extra_info": {
+    "calculation_time": "0:07:17.268936",
+    "corpus": "triviaqa",
+    "preperation_time": "0:00:05.849995",
+    "retriever": "tfidf",
+    "total_time": "0:07:23.118931",
+    "vocab_size": 8000
+  }
+}
+{
+  "correctly_retrieved_documents": 1575,
+  "date": "10/02/2021 00:04:07",
+  "number_of_docs_to_retrieve": 5,
+  "pretty_results": "Successfully retrieved 1575 out of 15541 documents",
+  "correctly_retrieved":"10.13448298 %",
+  "total_documents": 15541
+  "extra_info": {
+    "calculation_time": "0:09:03.670381",
+    "corpus": "triviaqa",
+    "preperation_time": "0:00:06.612097",
+    "retriever": "tfidf",
+    "total_time": "0:09:10.282478",
+    "vocab_size": 8000
+  },
+}

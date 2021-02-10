@@ -19,7 +19,7 @@ from tokenizers.normalizers import (
     Sequence,
     unicode_normalizer_from_str,
 )
-from tokenizers.pre_tokenizers import WhitespaceSplit
+from tokenizers.pre_tokenizers import BertPreTokenizer, WhitespaceSplit
 from tqdm import tqdm
 
 from ..config import Config
@@ -53,18 +53,21 @@ class WordTokenizer(Tokenizer):
         self.tokenizer = WordLevelBertTokenizer(vocab)
 
     def _build_vocab(self, corpus: Corpus, vocab_path: str) -> List[Tuple[str, int]]:
+        print("Bulding vocabulary for tokenizer")
+
         download("punkt", download_dir=nltk_data_path)
         download("stopwords", download_dir=nltk_data_path)
 
         cor, counter, batch_size = corpus.corpus, Counter(), 100
 
+        vocab_iterable = (
+            cor[i : i + batch_size].to_pylist() for i in range(0, len(cor), batch_size)
+        )
         with tqdm(total=len(cor)) as pbar:
             with Pool(Config.max_proc_to_use) as pool:
                 for res in pool.imap_unordered(
                     func=WordTokenizer._prep_vocab,
-                    iterable=(
-                        cor[i : i + batch_size] for i in range(0, len(cor), batch_size)
-                    ),
+                    iterable=vocab_iterable,
                 ):
                     pbar.update(batch_size)
                     counter += res
@@ -75,7 +78,6 @@ class WordTokenizer(Tokenizer):
     @staticmethod
     def _prep_vocab(sentance_list) -> CounterType[str]:
         stop_words = set(stopwords.words("english"))
-
         # Remove the stop words and everything that isn't a string
         return Counter(
             (
@@ -100,6 +102,39 @@ class WordTokenizerWithStopWords(WordTokenizer):
                 for sentance in sentance_list
                 for sentance in sent_tokenize(sentance.lower())
                 for token in word_tokenize(sentance)
+                if token.isalpha()
+            )
+        )
+
+
+class WordTokenizerWithStopWordsAndNotAlpha(WordTokenizer):
+    friendly_name = "word_with_stop_words_and_not_alpha"
+
+    @staticmethod
+    def _prep_vocab(sentance_list) -> CounterType[str]:
+        # Remove everything that isn't a string
+        return Counter(
+            (
+                token
+                for sentance in sentance_list
+                for sentance in sent_tokenize(sentance.lower())
+                for token in word_tokenize(sentance)
+            )
+        )
+
+
+class WordTokenizerWithSimpleSplit(WordTokenizer):
+    friendly_name = "word_with_simple_split"
+
+    @staticmethod
+    def _prep_vocab(sentance_list) -> CounterType[str]:
+        tokenizer = BertPreTokenizer()
+
+        return Counter(
+            (
+                token
+                for sentance in sentance_list
+                for token, _ in tokenizer.pre_tokenize_str(sentance)
                 if token.isalpha()
             )
         )
@@ -143,10 +178,10 @@ class WordLevelBertTokenizer(BaseTokenizer):
         normalizers = []
 
         if unicode_normalizer:
-            normalizers += [unicode_normalizer_from_str(unicode_normalizer)]
+            normalizers.append(unicode_normalizer_from_str(unicode_normalizer))
 
         if lowercase:
-            normalizers += [Lowercase()]
+            normalizers.append(Lowercase())
 
         # Create the normalizer structure
         if len(normalizers) > 0:

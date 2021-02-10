@@ -10,9 +10,6 @@ from ..utils import generate_cache_path
 
 
 class Tokenizer(ABC):
-    def get_id(self) -> str:
-        return self.__class__.__name__
-
     def __init__(self, corpus: Corpus) -> None:
         self._tokenizer_path = generate_cache_path(
             "tokenizer", corpus, self, file_ending=".json"
@@ -21,7 +18,7 @@ class Tokenizer(ABC):
         if lexists(self._tokenizer_path):
             self._load_from_file(self._tokenizer_path)
             return
-        print(f"Buidling {self.friendly_name} tokenizer")
+        print(f"Building tokenizer '{self.friendly_name}'")
         self._build(corpus, self._tokenizer_path)
         self._save_tokenizer()
 
@@ -59,6 +56,9 @@ class Tokenizer(ABC):
     @property
     def vocab(self) -> Dict[str, int]:
         return self.tokenizer.get_vocab()
+
+    def get_id(self) -> str:
+        return self.__class__.__name__
 
     def __call__(self, text, text_pair, **kwargs):
         return self.tokenizer(text, text_pair, **kwargs)

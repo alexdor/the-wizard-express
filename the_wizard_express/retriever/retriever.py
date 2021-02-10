@@ -48,3 +48,6 @@ class Retriever(ABC):
         Get the retriever id
         """
         return self.__class__.__name__
+
+    def __len__(self):
+        return self.corpus.corpus

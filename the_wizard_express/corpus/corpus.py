@@ -1,8 +1,6 @@
 import sys
 from abc import ABC, abstractclassmethod
-from errno import ENOENT
 from operator import itemgetter
-from os import strerror
 from os.path import dirname, lexists
 from pathlib import Path
 from pickle import load
@@ -10,7 +8,7 @@ from typing import List, Tuple, Union
 
 from datasets import Dataset
 from numpy import sort, unique
-from pyarrow import array as arrow_array
+from pyarrow import StringArray, array
 from the_wizard_express.utils.utils import generate_cache_path
 
 from ..config import Config
@@ -45,7 +43,7 @@ class Corpus(ABC):
         self._corpus_path = generate_cache_path("corpus", self, skip_vocab_size=True)
 
     @property
-    def corpus(self):
+    def corpus(self) -> StringArray:
         if not hasattr(self, "_corpus") or len(self._corpus) == 0:
             if lexists(self._corpus_path):
                 self._corpus = load(open(self._corpus_path, "rb"))
@@ -75,11 +73,17 @@ class Corpus(ABC):
             ],
             num_proc=Config.max_proc_to_use,
         )
-        dataset = arrow_array(sort(unique(dataset._data.column(key).to_numpy())))
+        dataset = array(sort(unique(dataset._data.column(key).to_numpy())))
         self._corpus = dataset
 
     def get_id(self) -> str:
         return f"{self.__class__.__name__}_{Config.percent_of_data_to_keep}"
+
+    def corpus_iterator(self, batch_size=100):
+        return (
+            self.corpus[i : i + batch_size].to_pylist()
+            for i in range(0, len(self.corpus), batch_size)
+        )
 
 
 class TrainTestDataset(ABC):

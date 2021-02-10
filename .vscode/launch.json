@@ -10,6 +10,7 @@
       "request": "launch",
       "module": "the_wizard_express",
       "args": [
+        "--debug",
         "dev"
       ]
     },

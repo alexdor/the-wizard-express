@@ -1,3 +1,4 @@
+import gc
 from datetime import datetime, timedelta
 from functools import partial
 from json import dumps
@@ -20,7 +21,7 @@ def check_question(retriever, number_of_docs, current_question):
 def main():
 
     prep_time_start = timer()
-    Config.vocab_size = 80000
+    Config.vocab_size = 8000
     number_of_docs = 5
     data_to_run_on = "test_data"
 
@@ -34,8 +35,7 @@ def main():
     test_data = data_to_function_call[data_to_run_on]()
 
     retrieved_proper_doc = 0
-    chunksize = 100
-
+    gc.collect()
     prep_time_end = timer()
 
     with Pool(Config.max_proc_to_use) as pool:
@@ -43,7 +43,7 @@ def main():
             for included in pool.imap_unordered(
                 func=partial(check_question, retriever, number_of_docs),
                 iterable=test_data,
-                chunksize=chunksize,
+                chunksize=50,
             ):
                 if included:
                     retrieved_proper_doc += 1

@@ -96,7 +96,7 @@ class TFIDFRetriever(Retriever):
                 for (word_tf_idf, word_id) in pool.imap_unordered(
                     func=TFIDFRetriever._compute_tf_idf,
                     iterable=tf_iterator,
-                    chunksize=chunksize,
+                    chunksize=100,
                 ):
                     pbar.update()
                     tf_idf[:, word_id] = word_tf_idf
@@ -113,12 +113,11 @@ class TFIDFRetriever(Retriever):
         document_counter: Dict[int, int] = {}
         tf = zeros((len(vocab_values), len(encoded_corpus)))
         for corpus_index, doc in enumerate(encoded_corpus):
-            doc_len = len(doc)
             counter: CounterType[int] = Counter(doc.ids)
             for word_id in vocab_values:
-                if word_id in doc.ids:
+                if word_id in counter:
                     document_counter[word_id] = document_counter.get(word_id, 0) + 1
-                tf[word_id, corpus_index] = counter[word_id] / float(doc_len)
+                tf[word_id, corpus_index] = counter[word_id] / float(len(doc))
 
         return (tf, Counter(document_counter))
 

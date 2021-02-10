@@ -6,9 +6,14 @@ from multiprocessing import Pool
 from timeit import default_timer as timer
 
 from the_wizard_express.config import Config
-from the_wizard_express.corpus import TriviaQA
+from the_wizard_express.corpus import Squad, TriviaQA
 from the_wizard_express.retriever import TFIDFRetriever
-from the_wizard_express.tokenizer import WordTokenizer
+from the_wizard_express.tokenizer import (
+    WordTokenizer,
+    WordTokenizerWithSimpleSplit,
+    WordTokenizerWithStopWords,
+    WordTokenizerWithStopWordsAndNotAlpha,
+)
 from tqdm import tqdm
 
 
@@ -18,15 +23,16 @@ def check_question(retriever, number_of_docs, current_question):
     )
 
 
-def main():
-
+def run_retriever_test(
+    corpus_class,
+    retriever_class,
+    tokenizer_class,
+    number_of_docs=5,
+    data_to_run_on="test_data",
+):
     prep_time_start = timer()
-    Config.vocab_size = 8000
-    number_of_docs = 5
-    data_to_run_on = "test_data"
-
-    corpus = TriviaQA()
-    retriever = TFIDFRetriever(corpus=corpus, tokenizer=WordTokenizer(corpus))
+    corpus = corpus_class()
+    retriever = retriever_class(corpus=corpus, tokenizer=tokenizer_class(corpus))
     data_to_function_call = {
         "test_data": corpus.get_test_data,
         "train_data": corpus.get_train_data,
@@ -66,6 +72,7 @@ def main():
                     "extra_info": {
                         "corpus": corpus.friendly_name,
                         "retriever": retriever.friendly_name,
+                        "tokenizer": retriever.tokenizer.friendly_name,
                         "vocab_size": Config.vocab_size,
                         "preperation_time": str(
                             timedelta(seconds=prep_time_end - prep_time_start)
@@ -81,6 +88,40 @@ def main():
                 indent=2,
             )
         )
+
+
+def main():
+    Config.debug = True
+    corpuses = (Squad, TriviaQA)
+    retrievers = [TFIDFRetriever]
+    tokenizers = (
+        WordTokenizerWithSimpleSplit,
+        WordTokenizerWithStopWords,
+        WordTokenizer,
+        WordTokenizerWithStopWordsAndNotAlpha,
+    )
+    vocab_sizes = [8000, 40000, 80000]
+
+    def find_data_to_run_on(corpus):
+        return (
+            ["validation_data"]
+            if corpus.friendly_name == "squad"
+            else ["test_data", "validation_data"]
+        )
+
+    for vocab_size in vocab_sizes:
+        Config.vocab_size = vocab_size
+        for corpus_class in corpuses:
+            for data_to_run_on in find_data_to_run_on(corpus_class):
+                for retriever_class in retrievers:
+                    for tokenizer_class in tokenizers:
+                        run_retriever_test(
+                            corpus_class,
+                            retriever_class,
+                            tokenizer_class,
+                            data_to_run_on=data_to_run_on,
+                        )
+                        gc.collect()
 
 
 if __name__ == "__main__":

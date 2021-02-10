@@ -48,10 +48,6 @@ class TFIDFRetriever(Retriever):
     def _build(self) -> None:
         vocab = self.tokenizer.vocab
 
-        encoded_corpus = chain.from_iterable(
-            self.tokenizer.encode_batch(chunk.tolist())
-            for chunk in self.corpus.corpus.iterchunks()
-        )
         encoded_special_tokens = {vocab[token] for token in Config.special_tokens_list}
         vocab_values = tuple(
             value for value in vocab.values() if value not in encoded_special_tokens
@@ -60,11 +56,11 @@ class TFIDFRetriever(Retriever):
         vocab_length = len(vocab_values)
         corpus_length = len(self.corpus.corpus)
         tf = empty((vocab_length, 0))
-        chunksize = 300
+        batch_size = 500
         documents_with_word: CounterType[int] = Counter()
 
         corpus_iterator = self._get_iterator_for_corpus(
-            encoded_corpus, corpus_length, vocab_values, chunksize=chunksize
+            vocab_values, batch_size=batch_size
         )
 
         # Compute tf-idf for the full corpus
@@ -72,14 +68,19 @@ class TFIDFRetriever(Retriever):
             first_loop_cache = f"{self.retriever_path}_tf_first_loop"
             # compute tf and word document frequency
             if lexists(first_loop_cache):
+                if Config.debug:
+                    print("Loading tf and document counter from cache")
                 (tf, documents_with_word) = load(open(first_loop_cache, "rb"))
             else:
+                if Config.debug:
+                    print("Computing tf and document counter")
+
                 with tqdm(total=corpus_length) as pbar:
                     for (tf_res, partial_documents_with_word) in pool.imap(
                         func=TFIDFRetriever._create_tf_and_document_counter,
                         iterable=corpus_iterator,
                     ):
-                        pbar.update(chunksize)
+                        pbar.update(batch_size)
                         documents_with_word += partial_documents_with_word
                         tf = hstack((tf, tf_res))
 
@@ -91,12 +92,14 @@ class TFIDFRetriever(Retriever):
                 for doc_counter in documents_with_word.most_common()
             )
 
+            if Config.debug:
+                print("Computing tf-idf sparse matrix")
             # compute tf-idf
             with tqdm(total=len(documents_with_word)) as pbar:
                 for (word_tf_idf, word_id) in pool.imap_unordered(
                     func=TFIDFRetriever._compute_tf_idf,
                     iterable=tf_iterator,
-                    chunksize=100,
+                    chunksize=50,
                 ):
                     pbar.update()
                     tf_idf[:, word_id] = word_tf_idf
@@ -107,7 +110,7 @@ class TFIDFRetriever(Retriever):
 
     @staticmethod
     def _create_tf_and_document_counter(
-        params: Tuple[Tuple[Encoding, ...], Tuple[int]]
+        params: Tuple[Tuple[Encoding, ...], Tuple[int, ...]]
     ) -> Tuple[ndarray, CounterType[int]]:
         (encoded_corpus, vocab_values) = params
         document_counter: Dict[int, int] = {}
@@ -135,17 +138,11 @@ class TFIDFRetriever(Retriever):
 
     def _get_iterator_for_corpus(
         self,
-        encoded_corpus: Iterator[Tuple[Encoding, ...]],
-        corpus_length: int,
         vocab_values,
-        chunksize=100,
-    ) -> Iterator[Tuple[Tuple[Encoding, ...], Tuple[int]]]:
-        for current_chunk in range(0, corpus_length, chunksize):
+        batch_size=100,
+    ) -> Iterator[Tuple[Tuple[Encoding, ...], Tuple[int, ...]]]:
+        for current_batch in self.corpus.corpus_iterator(batch_size):
             yield (
-                tuple(
-                    next(encoded_corpus)
-                    for i in range(chunksize)
-                    if current_chunk + i < corpus_length
-                ),
+                self.tokenizer.encode_batch(current_batch),
                 vocab_values,
             )

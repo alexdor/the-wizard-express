@@ -1,33 +1,52 @@
+
 {
-  "correctly_retrieved_documents": 1575,
-  "date": "09/02/2021 21:17:58",
+  "date": "10/02/2021 00:04:07",
   "pretty_results": "Successfully retrieved 1575 out of 15541 documents",
-  "total_documents": 15541,
-  "data_it_run_on": "test_data",
+  "correctly_retrieved_documents": 1575,
+  "total_documents": 15541
   "number_of_docs_to_retrieve": 5,
-    "correctly_retrieved":"10.13448298 %",
+  "data_it_run_on": "test_data",
+  "correctly_retrieved":"10.13448298 %",
   "extra_info": {
-    "calculation_time": "0:07:17.268936",
     "corpus": "triviaqa",
-    "preperation_time": "0:00:05.849995",
     "retriever": "tfidf",
-    "total_time": "0:07:23.118931",
     "vocab_size": 8000
+    "preperation_time": "0:00:06.612097",
+    "calculation_time": "0:09:03.670381",
+    "total_time": "0:09:10.282478",
+  },
+}
+{
+  "date": "10/02/2021 14:34:38",
+  "pretty_results": "Successfully retrieved 4217 out of 15541 documents",
+  "correctly_retrieved_documents": 4217,
+  "total_documents": 15541,
+  "number_of_docs_to_retrieve": 5,
+  "data_it_run_on": "test_data",
+  "correctly_retrieved": "27.13467601827424 %",
+  "extra_info": {
+    "corpus": "triviaqa",
+    "retriever": "tfidf",
+    "vocab_size": 80000,
+    "preperation_time": "0:00:06.843809",
+    "calculation_time": "0:10:08.890482",
+    "total_time": "0:10:15.734291"
   }
 }
 {
-  "correctly_retrieved_documents": 1575,
-  "date": "10/02/2021 00:04:07",
+  "date": "10/02/2021 17:41:57",
+  "pretty_results": "Successfully retrieved 4341 out of 15541 documents",
+  "correctly_retrieved_documents": 4341,
+  "total_documents": 15541,
   "number_of_docs_to_retrieve": 5,
-  "pretty_results": "Successfully retrieved 1575 out of 15541 documents",
-  "correctly_retrieved":"10.13448298 %",
-  "total_documents": 15541
+  "data_it_run_on": "test_data",
+  "correctly_retrieved": "27.93256547197735 %",
   "extra_info": {
-    "calculation_time": "0:09:03.670381",
     "corpus": "triviaqa",
-    "preperation_time": "0:00:06.612097",
     "retriever": "tfidf",
-    "total_time": "0:09:10.282478",
-    "vocab_size": 8000
-  },
+    "vocab_size": 100000,
+    "preperation_time": "0:00:07.356060",
+    "calculation_time": "0:19:17.256755",
+    "total_time": "0:19:24.612814"
+  }
 }

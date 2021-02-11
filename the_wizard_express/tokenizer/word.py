@@ -69,8 +69,8 @@ class WordTokenizer(Tokenizer):
                     func=WordTokenizer._prep_vocab,
                     iterable=vocab_iterable,
                 ):
-                    pbar.update(batch_size)
                     counter += res
+                    pbar.update(batch_size)
         Path(dirname(vocab_path)).mkdir(parents=True, exist_ok=True)
         pickle_and_save_to_file(counter, vocab_path)
         return counter.most_common(Config.vocab_size)

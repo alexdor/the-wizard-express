@@ -88,9 +88,9 @@ class TFIDFRetriever(Retriever):
                         func=TFIDFRetriever._create_tf_and_document_counter,
                         iterable=corpus_iterator,
                     ):
-                        pbar.update(batch_size)
                         documents_with_word += partial_documents_with_word
                         tf = hstack((tf, tf_res))
+                        pbar.update(batch_size)
 
                 pickle_and_save_to_file((tf, documents_with_word), first_loop_cache)
 
@@ -109,8 +109,8 @@ class TFIDFRetriever(Retriever):
                     iterable=tf_iterator,
                     chunksize=50,
                 ):
-                    pbar.update()
                     tf_idf[:, word_id] = word_tf_idf
+                    pbar.update()
 
         tf_idf = csr_matrix(tf_idf)
         pickle_and_save_to_file(tf_idf, self.retriever_path)

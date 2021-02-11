@@ -41,11 +41,10 @@ def run_retriever_test(
     test_data = data_to_function_call[data_to_run_on]()
 
     retrieved_proper_doc = 0
-    gc.collect()
     prep_time_end = timer()
 
-    with Pool(Config.max_proc_to_use) as pool:
-        with tqdm(total=len(test_data)) as pbar:
+    with tqdm(total=len(test_data)) as pbar:
+        with Pool(Config.max_proc_to_use) as pool:
             for included in pool.imap_unordered(
                 func=partial(check_question, retriever, number_of_docs),
                 iterable=test_data,
@@ -73,7 +72,9 @@ def run_retriever_test(
                         "corpus": corpus.friendly_name,
                         "retriever": retriever.friendly_name,
                         "tokenizer": retriever.tokenizer.friendly_name,
-                        "vocab_size": Config.vocab_size,
+                        "max_vocab_size": Config.vocab_size,
+                        "actual_vocab_size": len(retriever.tokenizer.vocab)
+                        - len(Config.special_tokens_list),
                         "preperation_time": str(
                             timedelta(seconds=prep_time_end - prep_time_start)
                         ),
@@ -100,7 +101,7 @@ def main():
         WordTokenizer,
         WordTokenizerWithStopWordsAndNotAlpha,
     )
-    vocab_sizes = [8000, 40000, 80000]
+    vocab_sizes = [80000, 40000, 8000]
 
     def find_data_to_run_on(corpus):
         return (
@@ -112,15 +113,30 @@ def main():
     for vocab_size in vocab_sizes:
         Config.vocab_size = vocab_size
         for corpus_class in corpuses:
-            for data_to_run_on in find_data_to_run_on(corpus_class):
-                for retriever_class in retrievers:
-                    for tokenizer_class in tokenizers:
-                        run_retriever_test(
-                            corpus_class,
-                            retriever_class,
-                            tokenizer_class,
-                            data_to_run_on=data_to_run_on,
-                        )
+            for retriever_class in retrievers:
+                for tokenizer_class in tokenizers:
+                    for data_to_run_on in find_data_to_run_on(corpus_class):
+                        pri = f"{retriever_class.friendly_name} with {tokenizer_class.friendly_name} on {corpus_class.friendly_name}, vocab size {vocab_size} and validated on {data_to_run_on}"
+                        print(f"Started testing {pri}")
+                        try:
+                            run_retriever_test(
+                                corpus_class,
+                                retriever_class,
+                                tokenizer_class,
+                                data_to_run_on=data_to_run_on,
+                            )
+                        except Exception as e:
+                            print(f"Got the following error on {pri}", e)
+                            print(f"Retrying {pri}")
+                            gc.collect()
+                            run_retriever_test(
+                                corpus_class,
+                                retriever_class,
+                                tokenizer_class,
+                                data_to_run_on=data_to_run_on,
+                            )
+                        print(f"Finished testing {pri}")
+                        print("------" * 4, "\n")
                         gc.collect()
 
 

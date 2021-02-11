@@ -25,8 +25,16 @@ class TFIDFRetriever(Retriever):
     def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         encoded_question = self.tokenizer.encode(question)
 
-        # Drop extra tokens (sep, uknown etc)
-        encoded_question = [id for id in encoded_question.ids if id < Config.vocab_size]
+        # Get ids for special tokens
+        special_token = {
+            self.tokenizer.vocab[special_token]
+            for special_token in Config.special_tokens_list
+        }
+
+        # Drop extra tokens (sep, unknown etc)
+        encoded_question = [
+            id for id in encoded_question.ids if id not in special_token
+        ]
 
         # Get the tf-idf for the encoded tokens and sum it per row
         sum_tf_idf = self.tf_idf[:, encoded_question].sum(axis=1)

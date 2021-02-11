@@ -20,7 +20,7 @@ class Retriever(ABC):
         if lexists(self.retriever_path):
             self._load_from_file()
             return
-        print(f"Buidling {self.friendly_name} retriever")
+        print(f"Building {self.friendly_name} retriever")
         self._build()
 
     @abstractclassmethod

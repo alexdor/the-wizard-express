@@ -53,7 +53,7 @@ class WordTokenizer(Tokenizer):
         self.tokenizer = WordLevelBertTokenizer(vocab)
 
     def _build_vocab(self, corpus: Corpus, vocab_path: str) -> List[Tuple[str, int]]:
-        print("Bulding vocabulary for tokenizer")
+        print("Building vocabulary for tokenizer")
 
         download("punkt", download_dir=nltk_data_path)
         download("stopwords", download_dir=nltk_data_path)

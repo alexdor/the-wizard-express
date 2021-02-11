@@ -23,7 +23,7 @@ class Reader(ABC):
         if lexists(self._reader_path):
             self._load_from_file()
             return
-        print(f"Buidling {self.friendly_name} reader")
+        print(f"Building {self.friendly_name} reader")
         self._build()
         # TODO
         #  pickle_and_save_to_file(self.model, self._reader_path)

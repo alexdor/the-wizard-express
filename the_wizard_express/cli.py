@@ -10,7 +10,7 @@ from .config import Config
 from .corpus import Squad, TriviaQA
 from .reader import BertOnBertReader, SimpleBertReader, TinyBertReader
 from .retriever import TFIDFRetriever
-from .tokenizer import WordTokenizer, WordTokenizerWithStopWords
+from .tokenizer import WordTokenizer, WordTokenizerWithoutStopWords
 
 
 @click.group()
@@ -36,8 +36,8 @@ def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
 
 retrievers = option_to_type([TFIDFRetriever])
 readers = option_to_type((BertOnBertReader, TinyBertReader, SimpleBertReader))
-corpuses = option_to_type((Squad, TriviaQA))
-tokenizers = option_to_type((WordTokenizer, WordTokenizerWithStopWords))
+corpuses = option_to_type((TriviaQA, Squad))
+tokenizers = option_to_type((WordTokenizerWithoutStopWords, WordTokenizer))
 
 
 def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:

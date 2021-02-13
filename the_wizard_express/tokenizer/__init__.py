@@ -2,7 +2,7 @@ from .tokenizer import Tokenizer
 from .word import (
     WordTokenizer,
     WordTokenizerWithSimpleSplit,
-    WordTokenizerWithStopWords,
-    WordTokenizerWithStopWordsAndNotAlpha,
+    WordTokenizerWithoutStopWords,
+    WordTokenizerWithoutStopWordsAndNotAlpha,
 )
 from .wordpiece import WordPiece

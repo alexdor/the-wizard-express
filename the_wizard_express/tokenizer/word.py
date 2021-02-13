@@ -7,7 +7,6 @@ from typing import Counter as CounterType
 from typing import Dict, List, Optional, Tuple, Union
 
 from nltk import data, download
-from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tokenizers import AddedToken
 from tokenizers import Tokenizer as HuggingFaceTokenizer
@@ -26,6 +25,7 @@ from ..config import Config
 from ..corpus.corpus import Corpus
 from ..utils import generate_cache_path, pickle_and_save_to_file
 from . import Tokenizer
+from .stopwords import stop_words
 
 nltk_data_path = join(Config.cache_dir, "nltk")
 data.path.append(nltk_data_path)
@@ -76,17 +76,14 @@ class WordTokenizer(Tokenizer):
         return counter.most_common(Config.vocab_size)
 
     @staticmethod
-    def _prep_vocab(sentance_list) -> CounterType[str]:
-        stop_words = set(stopwords.words("english"))
-        # Remove the stop words and everything that isn't a string
+    def _prep_vocab(sentence_list) -> CounterType[str]:
+        stopwords = stop_words
         return Counter(
-            (
-                token
-                for sentance in sentance_list
-                for sentance in sent_tokenize(sentance.lower())
-                for token in word_tokenize(sentance)
-                if token.isalpha() and token not in stop_words
-            )
+            token
+            for text in sentence_list
+            for sentence in sent_tokenize(text.lower())
+            for token in word_tokenize(sentence)
+            if token.isalpha() and token not in stopwords
         )
 
 
@@ -94,16 +91,13 @@ class WordTokenizerWithoutStopWords(WordTokenizer):
     friendly_name = "word_without_stop_words"
 
     @staticmethod
-    def _prep_vocab(sentance_list) -> CounterType[str]:
-        # Remove everything that isn't a string
+    def _prep_vocab(sentence_list) -> CounterType[str]:
         return Counter(
-            (
-                token
-                for sentance in sentance_list
-                for sentance in sent_tokenize(sentance.lower())
-                for token in word_tokenize(sentance)
-                if token.isalpha()
-            )
+            token
+            for text in sentence_list
+            for sentence in sent_tokenize(text.lower())
+            for token in word_tokenize(sentence)
+            if token.isalpha()
         )
 
 
@@ -111,15 +105,12 @@ class WordTokenizerWithoutStopWordsAndNotAlpha(WordTokenizer):
     friendly_name = "word_without_stop_words_and_not_alpha"
 
     @staticmethod
-    def _prep_vocab(sentance_list) -> CounterType[str]:
-        # Remove everything that isn't a string
+    def _prep_vocab(sentence_list) -> CounterType[str]:
         return Counter(
-            (
-                token
-                for sentance in sentance_list
-                for sentance in sent_tokenize(sentance.lower())
-                for token in word_tokenize(sentance)
-            )
+            token
+            for text in sentence_list
+            for sentence in sent_tokenize(text.lower())
+            for token in word_tokenize(sentence)
         )
 
 
@@ -127,16 +118,13 @@ class WordTokenizerWithSimpleSplit(WordTokenizer):
     friendly_name = "word_with_simple_split"
 
     @staticmethod
-    def _prep_vocab(sentance_list) -> CounterType[str]:
+    def _prep_vocab(sentence_list) -> CounterType[str]:
         tokenizer = BertPreTokenizer()
-
         return Counter(
-            (
-                token
-                for sentance in sentance_list
-                for token, _ in tokenizer.pre_tokenize_str(sentance)
-                if token.isalpha()
-            )
+            token
+            for text in sentence_list
+            for token, _ in tokenizer.pre_tokenize_str(text)
+            if token.isalpha()
         )
 
 

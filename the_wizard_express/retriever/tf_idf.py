@@ -1,15 +1,14 @@
 from collections import Counter
-from itertools import chain
 from math import log10
 from multiprocessing import Pool
+from os import remove
 from os.path import lexists
 from pickle import load
 from typing import Counter as CounterType
 from typing import Dict, Iterator, Tuple
 
-from numpy import argpartition, empty, ndarray, zeros
-from numpy.core.shape_base import hstack
-from scipy.sparse import csr_matrix
+from numpy import argpartition, empty, hstack, ndarray, zeros
+from scipy.sparse import csr_matrix, load_npz, save_npz
 from tokenizers import Encoding
 from tqdm import tqdm
 
@@ -21,6 +20,7 @@ from . import Retriever
 class TFIDFRetriever(Retriever):
     __slots__ = ("tokenizer", "corpus", "tf_idf", "retriever_path")
     friendly_name = "tfidf"
+    _file_ending = ".npz"
 
     def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
         encoded_question = self.tokenizer.encode(question)
@@ -51,7 +51,7 @@ class TFIDFRetriever(Retriever):
         )
 
     def _load_from_file(self) -> None:
-        self.tf_idf = load(open(self.retriever_path, "rb"))
+        self.tf_idf = load_npz(self.retriever_path)
 
     def _build(self) -> None:
         vocab = self.tokenizer.vocab
@@ -64,7 +64,7 @@ class TFIDFRetriever(Retriever):
         vocab_length = len(vocab_values)
         corpus_length = len(self.corpus.corpus)
         tf = empty((vocab_length, 0))
-        batch_size = 500
+        batch_size = 250
         documents_with_word: CounterType[int] = Counter()
 
         corpus_iterator = self._get_iterator_for_corpus(
@@ -91,8 +91,10 @@ class TFIDFRetriever(Retriever):
                         documents_with_word += partial_documents_with_word
                         tf = hstack((tf, tf_res))
                         pbar.update(batch_size)
-
-                pickle_and_save_to_file((tf, documents_with_word), first_loop_cache)
+                try:
+                    pickle_and_save_to_file((tf, documents_with_word), first_loop_cache)
+                except Exception as e:
+                    print("Failed to save first part of tf_idf to disk, error:", e)
 
             tf_idf = empty((corpus_length, vocab_length))
             tf_iterator = (
@@ -111,10 +113,13 @@ class TFIDFRetriever(Retriever):
                 ):
                     tf_idf[:, word_id] = word_tf_idf
                     pbar.update()
-
+        del tf, documents_with_word, word_tf_idf
         tf_idf = csr_matrix(tf_idf)
-        pickle_and_save_to_file(tf_idf, self.retriever_path)
+        save_npz(self.retriever_path, tf_idf)
         self.tf_idf = tf_idf
+        remove(first_loop_cache)
+        if Config.debug:
+            print("Building tf-idf done")
 
     @staticmethod
     def _create_tf_and_document_counter(

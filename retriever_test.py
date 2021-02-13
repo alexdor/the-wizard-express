@@ -10,9 +10,9 @@ from the_wizard_express.corpus import Squad, TriviaQA
 from the_wizard_express.retriever import TFIDFRetriever
 from the_wizard_express.tokenizer import (
     WordTokenizer,
+    WordTokenizerWithoutStopWords,
+    WordTokenizerWithoutStopWordsAndNotAlpha,
     WordTokenizerWithSimpleSplit,
-    WordTokenizerWithStopWords,
-    WordTokenizerWithStopWordsAndNotAlpha,
 )
 from tqdm import tqdm
 
@@ -40,15 +40,17 @@ def run_retriever_test(
     }
     test_data = data_to_function_call[data_to_run_on]()
 
+    gc.collect()
+
     retrieved_proper_doc = 0
     prep_time_end = timer()
 
-    with tqdm(total=len(test_data)) as pbar:
-        with Pool(Config.max_proc_to_use) as pool:
+    with Pool(Config.max_proc_to_use) as pool:
+        with tqdm(total=len(test_data)) as pbar:
             for included in pool.imap_unordered(
                 func=partial(check_question, retriever, number_of_docs),
                 iterable=test_data,
-                chunksize=50,
+                chunksize=100,
             ):
                 if included:
                     retrieved_proper_doc += 1
@@ -93,13 +95,13 @@ def run_retriever_test(
 
 def main():
     Config.debug = True
-    corpuses = (Squad, TriviaQA)
+    corpuses = (TriviaQA, Squad)
     retrievers = [TFIDFRetriever]
     tokenizers = (
         WordTokenizerWithSimpleSplit,
-        WordTokenizerWithStopWords,
+        WordTokenizerWithoutStopWords,
         WordTokenizer,
-        WordTokenizerWithStopWordsAndNotAlpha,
+        WordTokenizerWithoutStopWordsAndNotAlpha,
     )
     vocab_sizes = [80000, 40000, 8000]
 
@@ -110,9 +112,9 @@ def main():
             else ["test_data", "validation_data"]
         )
 
-    for vocab_size in vocab_sizes:
-        Config.vocab_size = vocab_size
-        for corpus_class in corpuses:
+    for corpus_class in corpuses:
+        for vocab_size in vocab_sizes:
+            Config.vocab_size = vocab_size
             for retriever_class in retrievers:
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
@@ -138,6 +140,7 @@ def main():
                         print(f"Finished testing {pri}")
                         print("------" * 4, "\n")
                         gc.collect()
+        gc.collect()
 
 
 if __name__ == "__main__":

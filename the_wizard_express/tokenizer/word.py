@@ -90,8 +90,8 @@ class WordTokenizer(Tokenizer):
         )
 
 
-class WordTokenizerWithStopWords(WordTokenizer):
-    friendly_name = "word_with_stop_words"
+class WordTokenizerWithoutStopWords(WordTokenizer):
+    friendly_name = "word_without_stop_words"
 
     @staticmethod
     def _prep_vocab(sentance_list) -> CounterType[str]:
@@ -107,8 +107,8 @@ class WordTokenizerWithStopWords(WordTokenizer):
         )
 
 
-class WordTokenizerWithStopWordsAndNotAlpha(WordTokenizer):
-    friendly_name = "word_with_stop_words_and_not_alpha"
+class WordTokenizerWithoutStopWordsAndNotAlpha(WordTokenizer):
+    friendly_name = "word_without_stop_words_and_not_alpha"
 
     @staticmethod
     def _prep_vocab(sentance_list) -> CounterType[str]:

@@ -5,6 +5,7 @@ from typing import Tuple
 from ..corpus import Corpus
 from ..tokenizer import Tokenizer
 from ..utils import generate_cache_path
+from ..config import Config
 
 
 class Retriever(ABC):
@@ -12,11 +13,16 @@ class Retriever(ABC):
     Abstract class for all the retrievers
     """
 
+    _file_ending = "pickle"
+
     def __init__(self, corpus: Corpus, tokenizer: Tokenizer) -> None:
         self.corpus = corpus
         self.tokenizer = tokenizer
-        self.retriever_path = generate_cache_path("retriever", corpus, tokenizer, self)
-
+        self.retriever_path = generate_cache_path(
+            "retriever", corpus, tokenizer, self, file_ending=self._file_ending
+        )
+        if Config.debug:
+            print(f"Cache path for {self.friendly_name} is {self.retriever_path}")
         if lexists(self.retriever_path):
             self._load_from_file()
             return

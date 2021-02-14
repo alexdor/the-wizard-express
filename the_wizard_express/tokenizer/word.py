@@ -66,7 +66,7 @@ class WordTokenizer(Tokenizer):
         with tqdm(total=len(cor)) as pbar:
             with Pool(Config.max_proc_to_use) as pool:
                 for res in pool.imap_unordered(
-                    func=WordTokenizer._prep_vocab,
+                    func=self._prep_vocab,
                     iterable=vocab_iterable,
                 ):
                     counter += res

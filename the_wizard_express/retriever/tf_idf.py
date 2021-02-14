@@ -8,7 +8,7 @@ from typing import Counter as CounterType
 from typing import Dict, Iterator, Tuple
 
 from numpy import argpartition, empty, hstack, ndarray, zeros
-from scipy.sparse import csr_matrix, load_npz, save_npz
+from scipy.sparse import csc_matrix, csr_matrix, load_npz, save_npz
 from tokenizers import Encoding
 from tqdm import tqdm
 
@@ -91,11 +91,18 @@ class TFIDFRetriever(Retriever):
                         documents_with_word += partial_documents_with_word
                         tf = hstack((tf, tf_res))
                         pbar.update(batch_size)
+
+                del tf_res, partial_documents_with_word
+                # this matrix is iterated mainly row wise, that's why csr is used
+                tf = csr_matrix(tf)
+
+                # temporary store tf and documents_with_word to disk
                 try:
                     pickle_and_save_to_file((tf, documents_with_word), first_loop_cache)
                 except Exception as e:
                     print("Failed to save first part of tf_idf to disk, error:", e)
 
+            # Init tf-idf matrix and create iterator for computing it
             tf_idf = empty((corpus_length, vocab_length))
             tf_iterator = (
                 (doc_counter, tf[doc_counter[0]], corpus_length)
@@ -104,6 +111,7 @@ class TFIDFRetriever(Retriever):
 
             if Config.debug:
                 print("Computing tf-idf sparse matrix")
+
             # compute tf-idf
             with tqdm(total=len(documents_with_word)) as pbar:
                 for (word_tf_idf, word_id) in pool.imap_unordered(
@@ -111,10 +119,12 @@ class TFIDFRetriever(Retriever):
                     iterable=tf_iterator,
                     chunksize=50,
                 ):
-                    tf_idf[:, word_id] = word_tf_idf
+                    tf_idf[:, word_id] = word_tf_idf.todense()
                     pbar.update()
         del tf, documents_with_word, word_tf_idf
-        tf_idf = csr_matrix(tf_idf)
+
+        # this matrix is iterated mainly column wise, that's why csc is used
+        tf_idf = csc_matrix(tf_idf)
         save_npz(self.retriever_path, tf_idf)
         self.tf_idf = tf_idf
         remove(first_loop_cache)

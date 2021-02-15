@@ -118,28 +118,31 @@ def main():
             for retriever_class in retrievers:
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
-                        pri = f"{retriever_class.friendly_name} with {tokenizer_class.friendly_name} on {corpus_class.friendly_name}, vocab size {vocab_size} and validated on {data_to_run_on}"
-                        print(f"Started testing {pri}")
-                        try:
-                            run_retriever_test(
-                                corpus_class,
-                                retriever_class,
-                                tokenizer_class,
-                                data_to_run_on=data_to_run_on,
-                            )
-                        except Exception as e:
-                            print(f"Got the following error on {pri}", e)
-                            print(f"Retrying {pri}")
+                        for number_of_docs in [1, 3, 5]:
+                            pri = f"{retriever_class.friendly_name} with {tokenizer_class.friendly_name} on {corpus_class.friendly_name}, vocab size {vocab_size} and validated on {data_to_run_on}"
+                            print(f"Started testing {pri}")
+                            try:
+                                run_retriever_test(
+                                    corpus_class,
+                                    retriever_class,
+                                    tokenizer_class,
+                                    data_to_run_on=data_to_run_on,
+                                    number_of_docs=number_of_docs,
+                                )
+                            except Exception as e:
+                                print(f"Got the following error on {pri}", e)
+                                print(f"Retrying {pri}")
+                                gc.collect()
+                                run_retriever_test(
+                                    corpus_class,
+                                    retriever_class,
+                                    tokenizer_class,
+                                    data_to_run_on=data_to_run_on,
+                                    number_of_docs=number_of_docs,
+                                )
+                            print(f"Finished testing {pri}")
+                            print("------" * 4, "\n")
                             gc.collect()
-                            run_retriever_test(
-                                corpus_class,
-                                retriever_class,
-                                tokenizer_class,
-                                data_to_run_on=data_to_run_on,
-                            )
-                        print(f"Finished testing {pri}")
-                        print("------" * 4, "\n")
-                        gc.collect()
         gc.collect()
 
 

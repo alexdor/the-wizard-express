@@ -44,6 +44,15 @@ class TFIDFRetriever(Retriever):
             -number_of_docs:
         ]
 
+        if len(doc_indexes) == 1:
+            return tuple(
+                [
+                    self.corpus.get_docs_by_index(
+                        doc_indexes.flatten().tolist()[0]
+                    ).as_py()
+                ]
+            )
+
         # return the corpuses with the proper index
         return tuple(
             doc.as_py()

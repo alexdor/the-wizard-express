@@ -3,10 +3,10 @@ from json import dumps
 from os.path import dirname, join
 from pathlib import Path
 from pickle import HIGHEST_PROTOCOL, dump
-from typing import List
 
 from datasets.arrow_dataset import Dataset
 from inflect import engine
+from transformers import PreTrainedTokenizerFast
 
 from ..config import Config
 
@@ -29,10 +29,12 @@ def generate_cache_path(name: str, *args, **kwargs):
     return join(
         Config.cache_dir,
         inflect_engine.plural(name),
-        "_".join([c.get_id() for c in args])
+        "_".join(
+            [c.get_id() for c in args if not isinstance(c, PreTrainedTokenizerFast)]
+        )
         + f"_{inflect_engine.singular_noun(name) or name}"
         + ("" if kwargs.get("skip_vocab_size") else f"_{Config.vocab_size}")
-        + (kwargs["file_ending"] if kwargs.get("file_ending") else ".pickle"),
+        + kwargs.get("file_ending", ".pickle"),
     )
 
 

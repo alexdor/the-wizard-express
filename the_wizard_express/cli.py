@@ -1,13 +1,19 @@
 """Console script for the_wizard_express."""
 import sys
-from multiprocessing import cpu_count
+from datetime import datetime, timedelta
+from json import dumps
 from os import environ
+from timeit import default_timer as timer
 from typing import Any, Callable, List, Tuple, Union
 
 import click
+from datasets import load_metric
+from tqdm import tqdm
 
 from .config import Config
-from .corpus import Squad, TriviaQA
+from .corpus import ParallelTrainData, Squad, TriviaQA
+from .language_model import StackedBert
+from .qa import TFIDFBertOnBert
 from .reader import BertOnBertReader, SimpleBertReader, TinyBertReader
 from .retriever import TFIDFRetriever
 from .tokenizer import WordTokenizer, WordTokenizerWithoutStopWords
@@ -72,6 +78,10 @@ def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
     callback=turn_user_selection_to_class(tokenizers),
 )
 def dev(retriever, reader, corpus, tokenizer):
+
+    # Stop hugging face from complaining about forking
+    environ["TOKENIZERS_PARALLELISM"] = "true"
+
     corpus_instance = corpus()
     tokenizer_instance = tokenizer(corpus_instance)
     retriever_instance = retriever(corpus=corpus_instance, tokenizer=tokenizer_instance)
@@ -92,7 +102,51 @@ def dev(retriever, reader, corpus, tokenizer):
     return 0
 
 
+@main.command()
+def evaluate_metrics():
+    metrics_to_run = {"rouge": {"rouge_types": "rougeLsum"}}  # "sacrebleu": {}}
+    metrics = {
+        metric: load_metric(metric, **args, cache_dir=Config.cache_dir)
+        for metric, args in metrics_to_run.items()
+    }
+
+    corpus = TriviaQA()
+    model = TFIDFBertOnBert(corpus=corpus)
+
+    start_time = timer()
+    for data in tqdm(corpus.get_validation_data()):
+        args = {
+            "prediction": model.answer_question(data["question"]),
+            "reference": data["answer"],
+        }
+        for metric in metrics.values():
+            metric.add(**args)
+    end_time = timer()
+
+    final_metrics = {
+        metric: metric_func.compute() for metric, metric_func in metrics.items()
+    }
+    with open("./results_for_paper/metrics.txt", "w+") as file:
+        file.write(
+            dumps(
+                {
+                    "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "data_it_run_on": "validation",
+                    "metrics": final_metrics,
+                    "extra_info": {
+                        "corpus": corpus.friendly_name,
+                        "model": model.friendly_name,
+                        "max_vocab_size": Config.vocab_size,
+                        "total_time": str(timedelta(seconds=end_time - start_time)),
+                    },
+                },
+                indent=2,
+            )
+        )
+
+    #
+    # TFIDFBertSimple
+
+
 if __name__ == "__main__":
-    # Stop hugging face from complaining about forking
-    environ["TOKENIZERS_PARALLELISM"] = "true"
     sys.exit(main())  # pragma: no cover

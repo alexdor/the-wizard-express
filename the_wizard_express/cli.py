@@ -9,6 +9,7 @@ from typing import Any, Callable, List, Tuple, Union
 import click
 from datasets import load_metric
 from tqdm import tqdm
+from transformers import AutoTokenizer, Trainer, TrainingArguments
 
 from .config import Config
 from .corpus import ParallelTrainData, Squad, TriviaQA
@@ -100,6 +101,45 @@ def dev(retriever, reader, corpus, tokenizer):
     print(f"Retrived proper document: {found_documents}")
     print(f"Model's answer: {answer}")
     return 0
+
+
+@main.command()
+def train():
+    environ["CUDA_VISIBLE_DEVICES"] = "4,5"
+    # environ["CUDA_LAUNCH_BLOCKING"] = "1"
+    corpus = TriviaQA()
+    tokenizer = WordTokenizer(corpus=corpus)
+    retriever = TFIDFRetriever(corpus=corpus, tokenizer=tokenizer)
+    reader_tokenizer = AutoTokenizer.from_pretrained(
+        StackedBert.model,
+        use_fast=True,
+        cache_dir=Config.cache_dir,
+    )
+    model = StackedBert(reader_tokenizer)
+
+    training_args = TrainingArguments(
+        output_dir="./results",  # output directory
+        num_train_epochs=3,  # total # of training epochs
+        per_device_train_batch_size=1,  # batch size per device during training
+        per_device_eval_batch_size=64,  # batch size for evaluation
+        warmup_steps=500,  # number of warmup steps for learning rate scheduler
+        weight_decay=0.01,  # strength of weight decay
+        logging_dir="./logs",  # directory for storing logs
+    )
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=ParallelTrainData(
+            corpus.get_train_data(), retriever, reader_tokenizer
+        ),
+        eval_dataset=ParallelTrainData(
+            corpus.get_test_data(), retriever, reader_tokenizer
+        ),
+    )
+
+    trainer.train()
+    # trainer.evaluate()
 
 
 @main.command()

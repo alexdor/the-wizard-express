@@ -10,6 +10,7 @@ from datasets import Dataset
 from numpy import sort, unique
 from pyarrow import StringArray, array
 from the_wizard_express.utils.utils import generate_cache_path
+from torch.utils.data import Dataset as TorchDataset
 
 from ..config import Config
 from ..utils import DatasetDict, pickle_and_save_to_file
@@ -20,15 +21,13 @@ else:
     from typing_extensions import TypedDict
 
 
-# TODO: Find a better name for this
-# TODO: Fix the type of this
-class DataType(TypedDict):
+class DataTypeForWizardExpress(TypedDict):
     question: str
     answer: str
     context: str
 
 
-RawDataset = Union[List[DataType], Dataset]
+RawDataset = Union[List[DataTypeForWizardExpress], Dataset]
 
 
 class Corpus(ABC):
@@ -117,3 +116,35 @@ class TrainTestDataset(ABC):
 
     def get_validation_data(self) -> RawDataset:
         return TrainTestDataset.dataset.__get__(self)["validation"]
+
+
+class ParallelTrainData(TorchDataset):
+    def __init__(self, data, retriever, tokenizer):
+        self.data = data
+        self.retriever = retriever
+        self.tokenizer = tokenizer
+
+    def __getitem__(self, idx):
+        question = self.data[idx]["question"]
+        context = self.retriever.retrieve_docs(question, 5)
+        item = self.tokenizer(
+            question,
+            "\n".join(context),
+            add_special_tokens=True,
+            padding="max_length",
+            max_length=70000,
+            return_tensors="pt",
+        )
+
+        item.data["labels"] = self.tokenizer(
+            self.data[idx]["answer"],
+            add_special_tokens=True,
+            return_tensors="pt",
+            padding="max_length",
+            max_length=10,
+        ).data["input_ids"]
+
+        return item
+
+    def __len__(self):
+        return len(self.data)

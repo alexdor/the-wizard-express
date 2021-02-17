@@ -10,17 +10,12 @@ from . import Reader
 
 class BertOnBertReader(Reader):
     friendly_name = "bert-plus"
+    model_name = "distilbert-base-cased-distilled-squad"
 
     def _build(self) -> None:
-        # model = "bert-base-uncased"
-        model = "distilbert-base-cased-distilled-squad"
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model,
-            use_fast=True,
-            cache_dir=Config.cache_dir,
-        )
+
         self.model = AutoModelForQuestionAnswering.from_pretrained(
-            model,
+            self.model_name,
             cache_dir=Config.cache_dir,
         )
         self.max_chunk_len = (
@@ -63,6 +58,9 @@ class BertOnBertReader(Reader):
                 # answer = answer[:-1]
                 # # Drop the ## which indicates a subword
                 # partial_answer = partial_answer[2:]
+                if not answer:
+                    answer = partial_answer[2:]
+                    continue
                 answer[-1] += partial_answer[2:]
                 continue
             if not answer or answer[-1] != partial_answer:
@@ -109,7 +107,7 @@ class BertOnBertReader(Reader):
             chunks = split(corpus_tensor, chunk_size)
 
             if not chunked_input:
-                chunked_input = [{}] * len(chunks)
+                chunked_input = [{} for _ in range(len(chunks))]
             for i, chunk in enumerate(chunks):
 
                 thing = cat((question_tensor, chunk))

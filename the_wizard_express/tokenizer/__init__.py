@@ -6,3 +6,4 @@ from .word import (
     WordTokenizerWithoutStopWordsAndNotAlpha,
 )
 from .wordpiece import WordPiece
+from .distilled_bert import DistilledBertTokenizer

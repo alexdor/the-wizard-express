@@ -10,15 +10,15 @@ from . import Reader
 
 class TinyBertReader(Reader):
     friendly_name = "tiny-bert"
+    model_name = "bert-large-uncased"
 
     def _build(self) -> None:
-        model_to_use = "bert-large-uncased"
         self.model = AutoModelForQuestionAnswering.from_pretrained(
-            model_to_use,
+            self.model_to_use,
             cache_dir=Config.cache_dir,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_to_use,
+            self.model_to_use,
             use_fast=True,
             cache_dir=Config.cache_dir,
         )

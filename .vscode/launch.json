@@ -5,13 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Module",
+      "name": "Dev",
       "type": "python",
       "request": "launch",
       "module": "the_wizard_express",
       "args": [
         "--debug",
         "dev"
+      ]
+    },
+    {
+      "name": "Train",
+      "type": "python",
+      "request": "launch",
+      "module": "the_wizard_express",
+      "args": [
+        "--debug",
+        "train"
+      ]
+    },
+    {
+      "name": "Metrics",
+      "type": "python",
+      "request": "launch",
+      "module": "the_wizard_express",
+      "args": [
+        "--debug",
+        "evaluate-metrics"
       ]
     },
     {

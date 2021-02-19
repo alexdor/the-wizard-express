@@ -60,7 +60,7 @@ class StackedBert(nn.Module):
         device = inputs["input_ids"].device
         answers = empty(0, dtype=int32, device=device)
         question_len = nonzero(inputs["input_ids"] == self.sep_token_id)[0][-1]
-        seperator_tensor = tensor([self.sep_token_id], device=device)
+        separator_tensor = tensor([self.sep_token_id], device=device)
         cls_tensor = tensor([self.tokenizer.cls_token_id], device=device)
         for chunk in self._chunkify(inputs, question_len):
             answer = self._get_answer_from_bert(
@@ -68,7 +68,7 @@ class StackedBert(nn.Module):
             )
 
             if len(answer) and (not len(answers) or not equal(answers[-1], answer)):
-                answers = cat((answers, answer, seperator_tensor)).int()
+                answers = cat((answers, answer, separator_tensor)).int()
         # final_question = cat(
         #     (
         #         inputs["input_ids"][0][0][:question_len],

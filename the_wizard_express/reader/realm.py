@@ -66,7 +66,7 @@ class BertOnBertReader(Reader):
             if not answer or answer[-1] != partial_answer:
                 answer.append(partial_answer)
 
-        # Drop whitespace from begining and end
+        # Drop whitespace from beginning and end
         return " ".join(answer).strip()
 
     def _chunkify(self, inputs, question: str):

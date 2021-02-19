@@ -5,7 +5,7 @@ from typing import List
 
 class _Config:
     """
-    A class with all the configuration used accross the projects
+    A class with all the configuration used across the projects
     """
 
     def __init__(self):

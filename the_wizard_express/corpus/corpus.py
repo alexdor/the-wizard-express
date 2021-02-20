@@ -1,5 +1,6 @@
 import sys
 from abc import ABC, abstractclassmethod
+from json import dumps
 from operator import itemgetter
 from os.path import dirname, lexists
 from pathlib import Path
@@ -55,9 +56,19 @@ class Corpus(ABC):
     def _build_corpus(self) -> None:
         pass
 
-    def save_to_disk(self, file_location: str) -> None:
+    def save_to_disk(self, file_location: str, as_json=False) -> None:
         Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
         with open(file_location, "w+", encoding="utf-8") as f:
+            if as_json:
+                f.write(
+                    dumps(
+                        [
+                            {"id": str(i), "contents": str(content)}
+                            for i, content in enumerate(self.corpus)
+                        ]
+                    )
+                )
+                return
             f.writelines([f"{line}\n" for line in self.corpus])
 
     def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
@@ -83,6 +94,38 @@ class Corpus(ABC):
             self.corpus[i : i + batch_size].to_pylist()
             for i in range(0, len(self.corpus), batch_size)
         )
+
+
+class ParallelTrainData(TorchDataset):
+    def __init__(self, data, retriever, tokenizer):
+        self.data = data
+        self.retriever = retriever
+        self.tokenizer = tokenizer
+
+    def __getitem__(self, idx):
+        question = self.data[idx]["question"]
+        context = self.retriever.retrieve_docs(question, 5)
+        item = self.tokenizer(
+            question,
+            "\n".join(context),
+            add_special_tokens=True,
+            padding="max_length",
+            max_length=70000,
+            return_tensors="pt",
+        )
+
+        item.data["labels"] = self.tokenizer(
+            self.data[idx]["answer"],
+            add_special_tokens=True,
+            return_tensors="pt",
+            padding="max_length",
+            max_length=10,
+        ).data["input_ids"]
+
+        return item
+
+    def __len__(self):
+        return len(self.data)
 
 
 class TrainTestDataset(ABC):
@@ -117,34 +160,11 @@ class TrainTestDataset(ABC):
     def get_validation_data(self) -> RawDataset:
         return TrainTestDataset.dataset.__get__(self)["validation"]
 
+    def get_train_ready_data(self, retriever, tokenizer) -> ParallelTrainData:
+        return ParallelTrainData(self.get_train_data(), retriever, tokenizer)
 
-class ParallelTrainData(TorchDataset):
-    def __init__(self, data, retriever, tokenizer):
-        self.data = data
-        self.retriever = retriever
-        self.tokenizer = tokenizer
+    def get_validation_ready_data(self, retriever, tokenizer) -> ParallelTrainData:
+        return ParallelTrainData(self.get_validation_data(), retriever, tokenizer)
 
-    def __getitem__(self, idx):
-        question = self.data[idx]["question"]
-        context = self.retriever.retrieve_docs(question, 5)
-        item = self.tokenizer(
-            question,
-            "\n".join(context),
-            add_special_tokens=True,
-            padding="max_length",
-            max_length=70000,
-            return_tensors="pt",
-        )
-
-        item.data["labels"] = self.tokenizer(
-            self.data[idx]["answer"],
-            add_special_tokens=True,
-            return_tensors="pt",
-            padding="max_length",
-            max_length=10,
-        ).data["input_ids"]
-
-        return item
-
-    def __len__(self):
-        return len(self.data)
+    def get_dataset(self):
+        return TrainTestDataset.dataset.__get__(self)

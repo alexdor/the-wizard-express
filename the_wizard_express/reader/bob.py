@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Iterator, List
 
 from torch import bool as torch_bool
@@ -5,15 +6,14 @@ from torch import cat, masked_select, ones, split, tensor, unsqueeze, zeros
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
 from ..config import Config
-from . import Reader
+from .reader import Reader
 
 
 class BertOnBertReader(Reader):
-    friendly_name = "bert-plus"
+    friendly_name = "bob"
     model_name = "distilbert-base-cased-distilled-squad"
 
     def _build(self) -> None:
-
         self.model = AutoModelForQuestionAnswering.from_pretrained(
             self.model_name,
             cache_dir=Config.hugging_face_cache_dir,
@@ -32,6 +32,7 @@ class BertOnBertReader(Reader):
         )
         return self._get_partial_answer(question, ". ".join(answers))
 
+    @lru_cache(256)
     def _get_partial_answer(self, question: str, document: str):
         model_inputs = self.tokenizer(
             question, document, add_special_tokens=True, return_tensors="pt"

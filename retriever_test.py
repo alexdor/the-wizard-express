@@ -1,8 +1,6 @@
 import gc
 from datetime import datetime, timedelta
-from functools import partial
 from json import dumps
-from multiprocessing import Pool
 from timeit import default_timer as timer
 
 from the_wizard_express.config import Config
@@ -15,10 +13,6 @@ from the_wizard_express.tokenizer import (
     WordTokenizerWithSimpleSplit,
 )
 from tqdm import tqdm
-
-# return current_question["context"] in retriever.retrieve_docs(
-#     current_question["question"], number_of_docs
-# )
 
 
 def run_retriever_test(
@@ -101,15 +95,15 @@ def run_retriever_test(
 
 def main():
     Config.debug = True
-    corpuses = (Squad,)  # TriviaQA
+    corpuses = (Squad, TriviaQA)
     retrievers = [PyseriniSimple, TFIDFRetriever]
     tokenizers = (
         WordTokenizer,
-        # WordTokenizerWithSimpleSplit,
-        # WordTokenizerWithoutStopWords,
-        # WordTokenizerWithoutStopWordsAndNotAlpha,
+        WordTokenizerWithSimpleSplit,
+        WordTokenizerWithoutStopWords,
+        WordTokenizerWithoutStopWordsAndNotAlpha,
     )
-    vocab_sizes = [80000]  # , 40000, 8000]
+    vocab_sizes = [80000, 40000, 8000]
 
     def find_data_to_run_on(corpus):
         return (
@@ -119,9 +113,13 @@ def main():
         )
 
     for corpus_class in corpuses:
+        pyserini_run = False
         for vocab_size in vocab_sizes:
             Config.vocab_size = vocab_size
             for retriever_class in retrievers:
+                # PyseriniSimple doesn't have a vocab size, so we can just skip
+                if isinstance(retriever_class, PyseriniSimple) and pyserini_run:
+                    continue
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
                         for number_of_docs in [3, 5]:
@@ -149,6 +147,8 @@ def main():
                             print(f"Finished testing {pri}")
                             print("------" * 4, "\n")
                             gc.collect()
+                if isinstance(retriever_class, PyseriniSimple):
+                    pyserini_run = True
         gc.collect()
 
 

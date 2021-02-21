@@ -58,17 +58,15 @@ class Corpus(ABC):
     def save_to_disk(self, file_location: str, as_json=False) -> None:
         Path(dirname(file_location)).mkdir(parents=True, exist_ok=True)
         with open(file_location, "w+", encoding="utf-8") as f:
-            if as_json:
-                f.write(
-                    dumps(
-                        [
-                            {"id": str(i), "contents": str(content)}
-                            for i, content in enumerate(self.corpus)
-                        ]
-                    )
-                )
+            if not as_json:
+                f.writelines([f"{line}\n" for line in self.corpus])
                 return
-            f.writelines([f"{line}\n" for line in self.corpus])
+
+            formated_corpus = [
+                {"id": str(i), "contents": str(content)}
+                for i, content in enumerate(self.corpus)
+            ]
+            f.write(dumps(formated_corpus))
 
     def get_docs_by_index(self, indexes: List[int]) -> Tuple[str]:
         return itemgetter(*indexes)(Corpus.corpus.__get__(self))

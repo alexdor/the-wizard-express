@@ -1,4 +1,5 @@
 from collections import Counter
+from functools import lru_cache
 from math import log10
 from multiprocessing import Pool
 from os import remove
@@ -22,6 +23,7 @@ class TFIDFRetriever(Retriever):
     friendly_name = "tfidf"
     _file_ending = ".npz"
 
+    @lru_cache(256)
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         encoded_question = self.tokenizer.encode(question)
 
@@ -44,10 +46,10 @@ class TFIDFRetriever(Retriever):
             ]
 
         # return the corpuses with the proper index
-        return (
+        return [
             doc.as_py()
             for doc in self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0])
-        )
+        ]
 
     def _load_from_file(self) -> None:
         self.tf_idf = load_npz(self.retriever_path)

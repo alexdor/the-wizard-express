@@ -1,4 +1,5 @@
 from abc import ABC
+from functools import lru_cache
 
 from transformers import AutoTokenizer
 
@@ -32,6 +33,7 @@ class QAModel(ABC):
         )
         self.reader = reader(tokenizer=reader_tokenizer)
 
+    @lru_cache(128)
     def answer_question(self, question: str) -> str:
         docs = self.retriever.retrieve_docs(question, self.docs_to_retrieve)
         return self.reader.answer(question=question, documents=docs)

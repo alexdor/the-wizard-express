@@ -1,4 +1,5 @@
 import subprocess
+from functools import lru_cache
 from os.path import dirname, join
 from pathlib import Path
 from shutil import rmtree
@@ -17,6 +18,7 @@ class PyseriniSimple(Retriever):
     _file_ending = ".index"
     _skip_vocab_size = True
 
+    @lru_cache(128)
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         # Retrieve relevant documents, turn their JSON result into a
         #  bytearray, parse it, extract the content, and return results

@@ -60,7 +60,7 @@ class TFIDFBertOnBert(QAModel):
 
 
 class PyseriniBertOnBert(QAModel):
-    friendly_name = "tfidf-bert-on-bert-model"
+    friendly_name = "pyserini-bert-on-bert-model"
 
     def __init__(self, corpus) -> None:
         args = {

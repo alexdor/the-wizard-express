@@ -30,7 +30,11 @@ def generate_cache_path(name: str, *args, **kwargs):
         Config.cache_dir,
         inflect_engine.plural(name),
         "_".join(
-            [c.get_id() for c in args if not isinstance(c, PreTrainedTokenizerFast)]
+            [
+                c.get_id()
+                for c in args
+                if not (c is None or isinstance(c, PreTrainedTokenizerFast))
+            ]
         )
         + f"_{inflect_engine.singular_noun(name) or name}"
         + ("" if kwargs.get("skip_vocab_size") else f"_{Config.vocab_size}")

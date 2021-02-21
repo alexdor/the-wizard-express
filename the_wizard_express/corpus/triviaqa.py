@@ -2,7 +2,7 @@ from datasets import concatenate_datasets, load_dataset
 
 from ..config import Config
 from ..utils import select_part_of_dataset
-from . import Corpus, TrainTestDataset
+from .corpus import Corpus, TrainTestDataset
 
 
 class TriviaQA(Corpus, TrainTestDataset):

@@ -10,11 +10,10 @@ from typing import List, Tuple, Union
 from datasets import Dataset
 from numpy import sort, unique
 from pyarrow import StringArray, array
-from the_wizard_express.utils.utils import generate_cache_path
 from torch.utils.data import Dataset as TorchDataset
 
 from ..config import Config
-from ..utils import DatasetDict, pickle_and_save_to_file
+from ..utils import DatasetDict, generate_cache_path, pickle_and_save_to_file
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict

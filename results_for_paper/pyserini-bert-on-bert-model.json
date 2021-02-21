@@ -1,0 +1,15 @@
+{
+  "date": "21/02/2021 13:21:57",
+  "metrics": {
+    "exact_match": 19.072847682119207,
+    "f1": 29.3895541819535
+  },
+  "extra_info": {
+    "corpus": "squad",
+    "model": "pyserini-bert-on-bert-model",
+    "max_vocab_size": 80000,
+    "total_time": "1:25:58.755749",
+    "testing_time": "0:00:00",
+    "prep_time": "0:00:07.900602"
+  }
+}

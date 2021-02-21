@@ -1,0 +1,15 @@
+{
+  "date": "21/02/2021 15:36:21",
+  "metrics": {
+    "exact_match": 10.397350993377483,
+    "f1": 17.47070937804368
+  },
+  "extra_info": {
+    "corpus": "squad",
+    "model": "tfidf-bert-on-bert-model",
+    "max_vocab_size": 80000,
+    "total_time": "1:39:13.881612",
+    "testing_time": "0:00:00",
+    "prep_time": "0:00:09.473790"
+  }
+}

@@ -29,7 +29,7 @@ torch ="~1.7.1"
 torchvision ="~0.8.1"
 transformers ="~4.3.2"
 datasets = "<1.3.0"
-apache-beam ="~2.27.0"
+apache-beam = "^2.27.0"
 Click ="~7.1.2"
 typing_extensions ="~3.7.4"
 tokenizers="~0.10.1"
@@ -41,6 +41,7 @@ tensorflow = "2.3.1"
 pyserini = "<0.11.0"
 pysimdjson = "^3.2.0"
 tqdm = "<4.50.0"
+pyarrow = "<3.0.0"
 
 
 [tool.poetry.dev-dependencies]

@@ -1,5 +1,3 @@
-from abc import ABC
-
 from torch import bool as torch_bool
 from torch import (
     cat,
@@ -17,20 +15,7 @@ from torch import (
 from torch.nn.functional import cross_entropy
 from transformers import DistilBertForQuestionAnswering
 
-
-class LanguageModel(ABC):
-    """
-    Abstract class for all the language models
-    """
-
-
-# class TFIDFBert(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-
-#     def forward(self, x):
-#         x = F.relu(self.conv1(x))
-#         return F.relu(self.conv2(x))
+from ..config import Config
 
 
 class StackedBert(nn.Module):
@@ -38,8 +23,12 @@ class StackedBert(nn.Module):
 
     def __init__(self, tokenizer):
         super().__init__()
-        self.bert = DistilBertForQuestionAnswering.from_pretrained(self.model)
-        self.final_bert = DistilBertForQuestionAnswering.from_pretrained(self.model)
+        self.bert = DistilBertForQuestionAnswering.from_pretrained(
+            self.model, cache_dir=Config.hugging_face_cache_dir
+        )
+        self.final_bert = DistilBertForQuestionAnswering.from_pretrained(
+            self.model, cache_dir=Config.hugging_face_cache_dir
+        )
         self.max_chunk_len = self.bert.config.max_position_embeddings
         self.tokenizer = tokenizer
         self.sep_token_id = tokenizer.sep_token_id
@@ -168,5 +157,3 @@ class StackedBert(nn.Module):
                         thing = cat((thing, tensor_of_one))
                 chunked_input[i][input_key] = thing.unsqueeze(dim=0)
         return [chunk for chunk in chunked_input if chunk]
-
-    # def _

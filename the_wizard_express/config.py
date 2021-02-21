@@ -9,7 +9,6 @@ class _Config:
     A class with all the configuration used across the projects
     """
 
-    """Config.cache_dir The cache directory to store models and other temporary files"""
     cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
 
     def __init__(self):

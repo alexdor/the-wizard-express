@@ -1,0 +1,17 @@
+{
+  "date": "20/02/2021 17:31:39",
+  "tensorboard_url": "https://tensorboard.dev/experiment/TRLeo9T7T76WwFqrM20xag/#scalars",
+  "tensorboard_experiment_name": "Distilled_bert_finalFeb20_19-31-34_hyperion",
+  "metrics": {
+    "exact_match": 75.96972563859981,
+    "f1": 84.53262655109245
+  },
+  "extra_info": {
+    "corpus": "squad",
+    "model": "wizard-bert-uncased-squadv2",
+    "max_vocab_size": 80000,
+    "total_time": "1:10:36.190146",
+    "training_time": "1:09:31.440184",
+    "metric_computation_time": "0:01:04.749962"
+  }
+}

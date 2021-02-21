@@ -18,22 +18,16 @@ from . import Retriever
 
 
 class TFIDFRetriever(Retriever):
-    __slots__ = ("tokenizer", "corpus", "tf_idf", "retriever_path")
+    __slots__ = ("tokenizer", "corpus", "tf_idf", "retriever_path", "_special_token")
     friendly_name = "tfidf"
     _file_ending = ".npz"
 
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         encoded_question = self.tokenizer.encode(question)
 
-        # Get ids for special tokens
-        special_token = {
-            self.tokenizer.vocab[special_token]
-            for special_token in Config.special_tokens_list
-        }
-
         # Drop extra tokens (sep, unknown etc)
         encoded_question = [
-            id for id in encoded_question.ids if id not in special_token
+            id for id in encoded_question.ids if id not in self._special_token
         ]
 
         # Get the tf-idf for the encoded tokens and sum it per row

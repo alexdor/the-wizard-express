@@ -29,11 +29,21 @@ class Retriever(ABC):
         )
         if Config.debug:
             print(f"Cache path for {self.friendly_name} is {self.retriever_path}")
+
         if lexists(self.retriever_path):
             self._load_from_file()
+        else:
+            print(f"Building {self.friendly_name} retriever")
+            self._build()
+
+        if not self.tokenizer:
             return
-        print(f"Building {self.friendly_name} retriever")
-        self._build()
+
+        # Get ids for special tokens
+        self._special_token = {
+            self.tokenizer.vocab[special_token]
+            for special_token in Config.special_tokens_list
+        }
 
     @abstractclassmethod
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:

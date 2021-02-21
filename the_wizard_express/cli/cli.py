@@ -11,7 +11,7 @@ from datasets.arrow_dataset import concatenate_datasets
 from tqdm import tqdm
 
 from ..config import Config
-from ..corpus import Squad, SquadV2, TriviaQA
+from ..corpus import Corpus, Squad, SquadV2, TriviaQA
 from ..language_model import DistilBertForQA, get_trainer
 from ..qa import PyseriniBertOnBert, QAModel, TFIDFBertOnBert
 from ..retriever import PyseriniSimple
@@ -134,6 +134,9 @@ def train():
 
 
 models = option_to_type((PyseriniBertOnBert, TFIDFBertOnBert))
+corpuses = option_to_type((Squad, TriviaQA))
+
+# TODO: Update click options to use common func
 
 
 @main.command()
@@ -143,25 +146,19 @@ models = option_to_type((PyseriniBertOnBert, TFIDFBertOnBert))
     default=models[0][0],
     callback=turn_user_selection_to_class(models),
 )
-def run_squad_validation(model: QAModel):
+@click.option(
+    "--corpus",
+    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
+    default=corpuses[0][0],
+    callback=turn_user_selection_to_class(corpuses),
+)
+def run_squad_validation(model: QAModel, corpus: Corpus):
     squad_v2 = False
     metric_prep_time = timer()
-    squad = Squad()
-    model_instance = model(squad)
-    dataset = squad.get_dataset()
+    corpus_instance = corpus(return_raw=True) if corpus is TriviaQA else corpus()
+    model_instance = model(corpus_instance)
+    dataset = corpus_instance.get_dataset()
     metric_start_time = timer()
-    # formatted_predictions = dataset.map(
-    #     lambda d: {
-    #         "id": d["id"],
-    #         "prediction_text": [
-    #             model_instance.answer_question(question) for question in d["question"]
-    #         ],
-    #     },
-    #     batched=True,
-    #     num_proc=Config.max_proc_to_use,
-    #     remove_columns=dataset.column_names,
-    # )
-
     formatted_predictions = [
         {"id": data["id"], "prediction_text": model_instance.answer_question(question)}
         for data in tqdm(dataset["validation"])
@@ -175,15 +172,6 @@ def run_squad_validation(model: QAModel):
         "squad_v2" if squad_v2 else "squad",
         cache_dir=Config.hugging_face_cache_dir,
     )
-    # if squad_v2:
-    #     formatted_predictions = [
-    #         {"id": k, "prediction_text": v, "no_answer_probability": 0.0}
-    #         for k, v in final_predictions.items()
-    #     ]
-    # else:
-    #     formatted_predictions = [
-    #         {"id": k, "prediction_text": v} for k, v in final_predictions.items()
-    #     ]
 
     references = [
         {"id": ex["id"], "answers": ex["answers"]} for ex in dataset["validation"]
@@ -200,7 +188,7 @@ def run_squad_validation(model: QAModel):
                     "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                     "metrics": final_metrics,
                     "extra_info": {
-                        "corpus": squad.friendly_name,
+                        "corpus": corpus_instance.friendly_name,
                         "model": model.friendly_name,
                         "max_vocab_size": Config.vocab_size,
                         "total_time": str(

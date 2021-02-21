@@ -2,22 +2,29 @@
 import sys
 from datetime import datetime, timedelta
 from json import dumps
-from os import environ
 from timeit import default_timer as timer
+from typing import Any, Callable, List, Tuple, Union
 
 import click
 from datasets import load_metric
 from datasets.arrow_dataset import concatenate_datasets
-from datasets.utils.py_utils import get_datasets_path
 from tqdm import tqdm
-from transformers import AutoTokenizer
 
 from ..config import Config
 from ..corpus import Squad, SquadV2, TriviaQA
-from ..language_model import DistilBertForQA, StackedBert, get_trainer
-from ..qa import TFIDFBertOnBert
-from ..retriever import PyseriniSimple, TFIDFRetriever
-from ..tokenizer import WordTokenizer
+from ..language_model import DistilBertForQA, get_trainer
+from ..qa import PyseriniBertOnBert, QAModel, TFIDFBertOnBert
+from ..retriever import PyseriniSimple
+
+
+def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
+    return lambda _, selection: next(
+        (values[1] for values in possible_values if values[0] == selection), None
+    )
+
+
+def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
+    return [(obj.friendly_name, obj) for obj in objects]
 
 
 @click.group()
@@ -118,6 +125,92 @@ def train():
                         ),
                         "metric_computation_time": str(
                             timedelta(seconds=metric_end_time - metric_start_time)
+                        ),
+                    },
+                },
+                indent=2,
+            )
+        )
+
+
+models = option_to_type((PyseriniBertOnBert, TFIDFBertOnBert))
+
+
+@main.command()
+@click.option(
+    "--model",
+    type=click.Choice([item[0] for item in models], case_sensitive=False),
+    default=models[0][0],
+    callback=turn_user_selection_to_class(models),
+)
+def run_squad_validation(model: QAModel):
+    squad_v2 = False
+    metric_prep_time = timer()
+    squad = Squad()
+    model_instance = model(squad)
+    dataset = squad.get_dataset()
+    metric_start_time = timer()
+    # formatted_predictions = dataset.map(
+    #     lambda d: {
+    #         "id": d["id"],
+    #         "prediction_text": [
+    #             model_instance.answer_question(question) for question in d["question"]
+    #         ],
+    #     },
+    #     batched=True,
+    #     num_proc=Config.max_proc_to_use,
+    #     remove_columns=dataset.column_names,
+    # )
+
+    formatted_predictions = [
+        {"id": data["id"], "prediction_text": model_instance.answer_question(question)}
+        for data in tqdm(dataset["validation"])
+        for question in (
+            data["question"]
+            if isinstance(data["question"], list)
+            else [data["question"]]
+        )
+    ]
+    metric = load_metric(
+        "squad_v2" if squad_v2 else "squad",
+        cache_dir=Config.hugging_face_cache_dir,
+    )
+    # if squad_v2:
+    #     formatted_predictions = [
+    #         {"id": k, "prediction_text": v, "no_answer_probability": 0.0}
+    #         for k, v in final_predictions.items()
+    #     ]
+    # else:
+    #     formatted_predictions = [
+    #         {"id": k, "prediction_text": v} for k, v in final_predictions.items()
+    #     ]
+
+    references = [
+        {"id": ex["id"], "answers": ex["answers"]} for ex in dataset["validation"]
+    ]
+
+    final_metrics = metric.compute(
+        predictions=formatted_predictions, references=references
+    )
+    metric_end_time = timer()
+    with open(f"./results_for_paper/{model.friendly_name}.json", "a+") as file:
+        file.write(
+            dumps(
+                {
+                    "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "metrics": final_metrics,
+                    "extra_info": {
+                        "corpus": squad.friendly_name,
+                        "model": model.friendly_name,
+                        "max_vocab_size": Config.vocab_size,
+                        "total_time": str(
+                            timedelta(seconds=metric_end_time - metric_prep_time)
+                        ),
+                        "testing_time": str(
+                            timedelta(seconds=metric_start_time - metric_start_time)
+                        ),
+                        "prep_time": str(
+                            timedelta(seconds=metric_start_time - metric_prep_time)
                         ),
                     },
                 },

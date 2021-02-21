@@ -1,15 +1,15 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC
 
 from transformers import AutoTokenizer
 
 from ..config import Config
 from ..corpus import Corpus
 from ..reader import BertOnBertReader, Reader, SimpleBertReader
-from ..retriever import Retriever, TFIDFRetriever
+from ..retriever import PyseriniSimple, Retriever, TFIDFRetriever
 from ..tokenizer import Tokenizer, WordTokenizer
 
 
-class Model(ABC):
+class QAModel(ABC):
     """
     Abstract class for all the final model
     """
@@ -24,7 +24,12 @@ class Model(ABC):
         retriever: Retriever,
         retriever_tokenizer: Tokenizer,
     ) -> None:
-        self.retriever = retriever(corpus=corpus, tokenizer=retriever_tokenizer(corpus))
+        self.retriever = retriever(
+            corpus=corpus,
+            tokenizer=retriever_tokenizer(corpus)
+            if retriever_tokenizer is not None
+            else None,
+        )
         self.reader = reader(tokenizer=reader_tokenizer)
 
     def answer_question(self, question: str) -> str:
@@ -36,7 +41,7 @@ class Model(ABC):
     #     return self.reader.answer(question=question, documents=docs
 
 
-class TFIDFBertOnBert(Model):
+class TFIDFBertOnBert(QAModel):
     friendly_name = "tfidf-bert-on-bert-model"
 
     def __init__(self, corpus) -> None:
@@ -54,7 +59,25 @@ class TFIDFBertOnBert(Model):
         super().__init__(**args)
 
 
-class TFIDFBertSimple(Model):
+class PyseriniBertOnBert(QAModel):
+    friendly_name = "tfidf-bert-on-bert-model"
+
+    def __init__(self, corpus) -> None:
+        args = {
+            "retriever": PyseriniSimple,
+            "retriever_tokenizer": None,
+            "reader": BertOnBertReader,
+            "reader_tokenizer": AutoTokenizer.from_pretrained(
+                BertOnBertReader.model_name,
+                use_fast=True,
+                cache_dir=Config.hugging_face_cache_dir,
+            ),
+            "corpus": corpus,
+        }
+        super().__init__(**args)
+
+
+class TFIDFBertSimple(QAModel):
     friendly_name = "tfidf-bert-simple-model"
 
     def __init__(self, corpus) -> None:

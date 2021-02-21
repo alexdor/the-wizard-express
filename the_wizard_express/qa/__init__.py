@@ -1,1 +1,1 @@
-from .model import TFIDFBertOnBert, TFIDFBertSimple, Model
+from .model import QAModel, PyseriniBertOnBert, TFIDFBertOnBert, TFIDFBertSimple

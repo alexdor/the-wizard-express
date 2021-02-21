@@ -15,6 +15,7 @@ class PyseriniSimple(Retriever):
     __slots__ = ("tokenizer", "corpus", "searcher", "retriever_path")
     friendly_name = "pyserini-simple"
     _file_ending = ".index"
+    _skip_vocab_size = True
 
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         # return the corpuses with the proper index

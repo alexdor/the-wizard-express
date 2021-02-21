@@ -14,12 +14,18 @@ class Retriever(ABC):
     """
 
     _file_ending = "pickle"
+    _skip_vocab_size = False
 
     def __init__(self, corpus: Corpus, tokenizer: Tokenizer) -> None:
         self.corpus = corpus
         self.tokenizer = tokenizer
         self.retriever_path = generate_cache_path(
-            "retriever", corpus, tokenizer, self, file_ending=self._file_ending
+            "retriever",
+            corpus,
+            tokenizer,
+            self,
+            file_ending=self._file_ending,
+            skip_vocab_size=self._skip_vocab_size,
         )
         if Config.debug:
             print(f"Cache path for {self.friendly_name} is {self.retriever_path}")

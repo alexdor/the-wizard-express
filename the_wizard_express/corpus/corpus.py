@@ -82,6 +82,8 @@ class Corpus(ABC):
             ],
             num_proc=Config.max_proc_to_use,
         )
+        # Accessing private property here because huggingface's unique
+        # throws an error
         dataset = array(sort(unique(dataset._data.column(key).to_numpy())))
         self._corpus = dataset
 

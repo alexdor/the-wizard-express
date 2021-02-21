@@ -27,20 +27,12 @@ class TriviaQA(Corpus, TrainTestDataset):
             "rc",
             cache_dir=Config.hugging_face_cache_dir,
         )
-        if self.return_raw:
-            self._dataset = dataset
-            return
-        dataset = dataset.filter(
-            lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
-            num_proc=Config.max_proc_to_use,
-        )
-
         dataset = select_part_of_dataset(dataset)
-        self._dataset = dataset.map(
+        dataset = dataset.map(
             lambda data: {
                 "question": data["question"],
                 "answer": data["answer"]["value"],
-                "context": "\n".join(data["entity_pages"]["wiki_context"]),
+                "context": data["entity_pages"]["wiki_context"],
             },
             remove_columns=[
                 "question_id",
@@ -48,6 +40,14 @@ class TriviaQA(Corpus, TrainTestDataset):
                 "entity_pages",
                 "search_results",
             ],
+            num_proc=Config.max_proc_to_use,
+        )
+        if self.return_raw:
+            self._dataset = dataset
+            return
+
+        self._dataset = dataset.filter(
+            lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
             num_proc=Config.max_proc_to_use,
         )
 

@@ -7,7 +7,7 @@ from timeit import default_timer as timer
 
 from the_wizard_express.config import Config
 from the_wizard_express.corpus import Squad, TriviaQA
-from the_wizard_express.retriever import TFIDFRetriever
+from the_wizard_express.retriever import PyseriniSimple, TFIDFRetriever
 from the_wizard_express.tokenizer import (
     WordTokenizer,
     WordTokenizerWithoutStopWords,
@@ -16,11 +16,9 @@ from the_wizard_express.tokenizer import (
 )
 from tqdm import tqdm
 
-
-def check_question(retriever, number_of_docs, current_question):
-    return current_question["context"] in retriever.retrieve_docs(
-        current_question["question"], number_of_docs
-    )
+# return current_question["context"] in retriever.retrieve_docs(
+#     current_question["question"], number_of_docs
+# )
 
 
 def run_retriever_test(
@@ -40,21 +38,29 @@ def run_retriever_test(
     }
     test_data = data_to_function_call[data_to_run_on]()
 
-    gc.collect()
-
     retrieved_proper_doc = 0
     prep_time_end = timer()
 
-    with Pool(Config.max_proc_to_use) as pool:
-        with tqdm(total=len(test_data)) as pbar:
-            for included in pool.imap_unordered(
-                func=partial(check_question, retriever, number_of_docs),
-                iterable=test_data,
-                chunksize=100,
-            ):
-                if included:
-                    retrieved_proper_doc += 1
-                pbar.update()
+    def check_question(current_question):
+        return sum(
+            int(
+                any(
+                    doc in current_question["context"]
+                    for doc in retriever.retrieve_docs(
+                        question,
+                        number_of_docs,
+                    )
+                )
+            )
+            for question in (
+                current_question["question"]
+                if isinstance(current_question["question"], list)
+                else [current_question["question"]]
+            )
+        )
+
+    retrieved_proper_doc = sum(check_question(question) for question in tqdm(test_data))
+
     calculation_finished = timer()
     results = f"Successfully retrieved {retrieved_proper_doc} out of {len(test_data)} documents"
     print(results)
@@ -95,15 +101,15 @@ def run_retriever_test(
 
 def main():
     Config.debug = True
-    corpuses = (TriviaQA, Squad)
-    retrievers = [TFIDFRetriever]
+    corpuses = (Squad,)  # TriviaQA
+    retrievers = [PyseriniSimple, TFIDFRetriever]
     tokenizers = (
-        WordTokenizerWithSimpleSplit,
-        WordTokenizerWithoutStopWords,
         WordTokenizer,
-        WordTokenizerWithoutStopWordsAndNotAlpha,
+        # WordTokenizerWithSimpleSplit,
+        # WordTokenizerWithoutStopWords,
+        # WordTokenizerWithoutStopWordsAndNotAlpha,
     )
-    vocab_sizes = [80000, 40000, 8000]
+    vocab_sizes = [80000]  # , 40000, 8000]
 
     def find_data_to_run_on(corpus):
         return (
@@ -118,7 +124,7 @@ def main():
             for retriever_class in retrievers:
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
-                        for number_of_docs in [1, 3, 5]:
+                        for number_of_docs in [3, 5]:
                             pri = f"{retriever_class.friendly_name} with {tokenizer_class.friendly_name} on {corpus_class.friendly_name}, vocab size {vocab_size} and validated on {data_to_run_on}"
                             print(f"Started testing {pri}")
                             try:

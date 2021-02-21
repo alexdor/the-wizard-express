@@ -79,13 +79,26 @@ class Corpus(ABC):
             remove_columns=[
                 "question",
                 "answer",
+                "id",
             ],
             num_proc=Config.max_proc_to_use,
         )
-        # Accessing private property here because huggingface's unique
-        # throws an error
-        dataset = array(sort(unique(dataset._data.column(key).to_numpy())))
-        self._corpus = dataset
+        dataset.flatten_()
+        dataset = (
+            dataset.filter(
+                lambda row: len(row["context"]) > 0,
+                num_proc=Config.max_proc_to_use,
+            )
+            .map(
+                lambda data: {key: data[key][0]},
+                num_proc=Config.max_proc_to_use,
+            )
+            .unique(key)
+        )
+
+        dataset.sort()
+
+        self._corpus = array(dataset)
 
     def get_id(self) -> str:
         return f"{self.__class__.__name__}_{Config.percent_of_data_to_keep}"

@@ -48,7 +48,7 @@ class TriviaQA(Corpus, TrainTestDataset):
             return
 
         self._dataset = dataset.filter(
-            lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
+            lambda row: len(row["context"]) > 0,
             num_proc=Config.max_proc_to_use,
         )
 

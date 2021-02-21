@@ -40,6 +40,26 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "name": "Pyserini",
+      "type": "python",
+      "request": "launch",
+      "module": "the_wizard_express",
+      "args": [
+        "--debug",
+        "pyserini"
+      ]
+    },
+    {
+      "name": "Run squad",
+      "type": "python",
+      "request": "launch",
+      "module": "the_wizard_express",
+      "args": [
+        "--debug",
+        "run-squad-validation"
+      ]
+    },
   ]
 }

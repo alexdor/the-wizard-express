@@ -18,7 +18,8 @@ class PyseriniSimple(Retriever):
     _skip_vocab_size = True
 
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
-        # return the corpuses with the proper index
+        # Retrieve relevant documents, turn their JSON result into a
+        #  bytearray, parse it, extract the content, and return results
         return (
             str(self.json_parse.parse(hit.raw.encode())["contents"])
             for hit in self.searcher.search(question, k=number_of_docs)

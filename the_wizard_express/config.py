@@ -1,5 +1,6 @@
 from multiprocessing import cpu_count
 from os import environ, getenv, path
+from pathlib import Path
 from typing import List
 
 
@@ -8,13 +9,15 @@ class _Config:
     A class with all the configuration used across the projects
     """
 
+    """Config.cache_dir The cache directory to store models and other temporary files"""
+    cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
+
     def __init__(self):
         self.debug = False
         self.max_proc_to_use = min(cpu_count() - 1, 15)
         self.percent_of_data_to_keep = 1.0
-
-    """Config.cache_dir The cache directory to store models and other temporary files"""
-    cache_dir = getenv("CACHE_DIR", path.join(path.realpath("."), ".cache"))
+        self.hugging_face_cache_dir = path.join(self.cache_dir, "hugging_face")
+        Path(self.hugging_face_cache_dir).mkdir(parents=True, exist_ok=True)
 
     @property
     def debug(self) -> bool:
@@ -44,12 +47,14 @@ class _Config:
             value = value / 100.0
         self._percent_of_data_to_keep = value
 
-    vocab_size = 8000
+    vocab_size = 80000
     unk_token = "[UNK]"
     sep_token = "[SEP]"
     pad_token = "[PAD]"
     cls_token = "[CLS]"
     mask_token = "[MASK]"
+    doc_stride = 128
+    max_seq_len = 384
 
     @property
     def special_tokens_list(self) -> List[str]:

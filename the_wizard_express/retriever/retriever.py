@@ -1,11 +1,11 @@
 from abc import ABC, abstractclassmethod
 from os.path import lexists
-from typing import Tuple
+from typing import Iterator
 
+from ..config import Config
 from ..corpus import Corpus
 from ..tokenizer import Tokenizer
 from ..utils import generate_cache_path
-from ..config import Config
 
 
 class Retriever(ABC):
@@ -30,7 +30,7 @@ class Retriever(ABC):
         self._build()
 
     @abstractclassmethod
-    def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
+    def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         """
         Main method for the retriever, it's used to get the relavant documents
         for a given question

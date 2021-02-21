@@ -31,6 +31,10 @@ class Model(ABC):
         docs = self.retriever.retrieve_docs(question, self.docs_to_retrieve)
         return self.reader.answer(question=question, documents=docs)
 
+    # def answer_questions(self, questions: List[str]) -> List[str]:
+    #     docs = self.retriever.retrieve_docs(question, self.docs_to_retrieve)
+    #     return self.reader.answer(question=question, documents=docs
+
 
 class TFIDFBertOnBert(Model):
     friendly_name = "tfidf-bert-on-bert-model"
@@ -43,7 +47,7 @@ class TFIDFBertOnBert(Model):
             "reader_tokenizer": AutoTokenizer.from_pretrained(
                 BertOnBertReader.model_name,
                 use_fast=True,
-                cache_dir=Config.cache_dir,
+                cache_dir=Config.hugging_face_cache_dir,
             ),
             "corpus": corpus,
         }
@@ -61,7 +65,7 @@ class TFIDFBertSimple(Model):
             "reader_tokenizer": AutoTokenizer.from_pretrained(
                 SimpleBertReader.model_name,
                 use_fast=True,
-                cache_dir=Config.cache_dir,
+                cache_dir=Config.hugging_face_cache_dir,
             ),
             "corpus": corpus,
         }

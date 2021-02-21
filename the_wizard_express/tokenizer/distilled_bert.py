@@ -14,7 +14,7 @@ class DistilledBertTokenizer(Tokenizer):
         self.tokenizer = AutoTokenizer.from_pretrained(
             model,
             use_fast=True,
-            cache_dir=Config.cache_dir,
+            cache_dir=Config.hugging_face_cache_dir,
         )
 
         self.tokenizer.prepare_for_tokenization

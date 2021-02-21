@@ -22,7 +22,7 @@ class TFIDFRetriever(Retriever):
     friendly_name = "tfidf"
     _file_ending = ".npz"
 
-    def retrieve_docs(self, question: str, number_of_docs: int) -> Tuple[str]:
+    def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         encoded_question = self.tokenizer.encode(question)
 
         # Get ids for special tokens
@@ -45,16 +45,12 @@ class TFIDFRetriever(Retriever):
         ]
 
         if len(doc_indexes) == 1:
-            return tuple(
-                [
-                    self.corpus.get_docs_by_index(
-                        doc_indexes.flatten().tolist()[0]
-                    ).as_py()
-                ]
-            )
+            return [
+                self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0]).as_py()
+            ]
 
         # return the corpuses with the proper index
-        return tuple(
+        return (
             doc.as_py()
             for doc in self.corpus.get_docs_by_index(doc_indexes.flatten().tolist()[0])
         )

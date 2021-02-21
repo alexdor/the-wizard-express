@@ -1,6 +1,6 @@
 from abc import ABC, abstractclassmethod
 from os.path import lexists
-from typing import List
+from typing import Iterator
 
 from ..tokenizer import Tokenizer
 from ..utils import generate_cache_path
@@ -29,7 +29,7 @@ class Reader(ABC):
         #  pickle_and_save_to_file(self.model, self._reader_path)
 
     @abstractclassmethod
-    def answer(self, question: str, documents: List[str]) -> str:
+    def answer(self, question: str, documents: Iterator[str]) -> str:
         """
         Main method for the retriever, it's used to get the relavant documents
         for a given question

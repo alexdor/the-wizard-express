@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import List
+from typing import Iterator, List
 
 from torch import argmax, cat, masked_select, split, tensor, unsqueeze
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
@@ -15,12 +15,12 @@ class TinyBertReader(Reader):
     def _build(self) -> None:
         self.model = AutoModelForQuestionAnswering.from_pretrained(
             self.model_to_use,
-            cache_dir=Config.cache_dir,
+            cache_dir=Config.hugging_face_cache_dir,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_to_use,
             use_fast=True,
-            cache_dir=Config.cache_dir,
+            cache_dir=Config.hugging_face_cache_dir,
         )
         self.max_len = self.model.config.max_position_embeddings
         self.chunked = False
@@ -116,7 +116,8 @@ class TinyBertReader(Reader):
             self.tokenizer.convert_ids_to_tokens(input_ids)
         )
 
-    def answer(self, question: str, documents: List[str]) -> str:
+    def answer(self, question: str, documents: Iterator[str]) -> str:
+        documents = tuple(documents)
         self._tokenize(question, documents[0])
         return self._get_answer()
 

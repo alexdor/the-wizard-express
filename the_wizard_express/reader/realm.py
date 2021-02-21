@@ -1,4 +1,4 @@
-from typing import List
+from typing import Iterator, List
 
 from torch import bool as torch_bool
 from torch import cat, masked_select, ones, split, tensor, unsqueeze, zeros
@@ -16,7 +16,7 @@ class BertOnBertReader(Reader):
 
         self.model = AutoModelForQuestionAnswering.from_pretrained(
             self.model_name,
-            cache_dir=Config.cache_dir,
+            cache_dir=Config.hugging_face_cache_dir,
         )
         self.max_chunk_len = (
             self.model.config.max_position_embeddings
@@ -26,7 +26,7 @@ class BertOnBertReader(Reader):
         # TODO
         return self._build()
 
-    def answer(self, question: str, documents: List[str]) -> str:
+    def answer(self, question: str, documents: Iterator[str]) -> str:
         answers = (
             self._get_partial_answer(question, document) for document in documents
         )
@@ -59,7 +59,6 @@ class BertOnBertReader(Reader):
                 # # Drop the ## which indicates a subword
                 # partial_answer = partial_answer[2:]
                 if not answer:
-                    answer = partial_answer[2:]
                     continue
                 answer[-1] += partial_answer[2:]
                 continue
@@ -133,5 +132,5 @@ class BertOnBertReader(Reader):
 class SimpleBertReader(BertOnBertReader):
     friendly_name = "bert"
 
-    def answer(self, question: str, documents: List[str]) -> str:
+    def answer(self, question: str, documents: Iterator[str]) -> str:
         return self._get_partial_answer(question, "\n".join(documents))

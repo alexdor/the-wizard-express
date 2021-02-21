@@ -16,17 +16,20 @@ class TriviaQA(Corpus, TrainTestDataset):
 
     friendly_name = "triviaqa"
 
-    def __init__(self) -> None:
+    def __init__(self, return_raw=False) -> None:
         super().__init__()
         TrainTestDataset.__init__(self)
+        self.return_raw = return_raw
 
     def _build_dataset(self):
         dataset = load_dataset(
             "trivia_qa",
             "rc",
-            cache_dir=Config.cache_dir,
+            cache_dir=Config.hugging_face_cache_dir,
         )
-
+        if self.return_raw:
+            self._dataset = dataset
+            return
         dataset = dataset.filter(
             lambda row: len(row["entity_pages"]["wiki_context"]) > 0,
             num_proc=Config.max_proc_to_use,

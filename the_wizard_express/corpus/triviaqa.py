@@ -30,6 +30,7 @@ class TriviaQA(Corpus, TrainTestDataset):
         dataset = select_part_of_dataset(dataset)
         dataset = dataset.map(
             lambda data: {
+                "id": data["question_id"],
                 "question": data["question"],
                 "answer": data["answer"]["value"],
                 "context": data["entity_pages"]["wiki_context"],

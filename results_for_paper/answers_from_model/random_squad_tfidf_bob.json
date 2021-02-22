@@ -1,0 +1,70 @@
+{
+  "answers": [
+    {
+      "question": "ABC had secondary status on the existing stations in what Ohio town?",
+      "answer": "Raleigh",
+      "expected_answer": ["Youngstown", "WKST-TV in Youngstown", "Youngstown"]
+    },
+    {
+      "question": "Was this footage compatible or incompatible with live broadcast TV formats?",
+      "answer": "incompatible",
+      "expected_answer": [
+        "incompatible",
+        "had to be converted",
+        "incompatible",
+        "format incompatible with broadcast TV",
+        "incompatible"
+      ]
+    },
+    {
+      "question": "Who did Warsaw serve as the seat for in 1529?",
+      "answer": "Isaac Bashevis Singer",
+      "expected_answer": ["General Sejm", "General Sejm", "General Sejm"]
+    },
+    {
+      "question": "How many Doctor Who episodes have been shown, in total?",
+      "answer": "five. 21. two",
+      "expected_answer": ["826", "826", "826"]
+    },
+    {
+      "question": "What \"dynamic theory\" did Tesla say he finished in 1937?",
+      "answer": "",
+      "expected_answer": ["gravity", "gravity", "of gravity"]
+    },
+    {
+      "question": "Which district in Fresno is known as the center for the heavy metal community?",
+      "answer": "San Joaquin Valley",
+      "expected_answer": ["Tower District", "Tower District", "Tower District"]
+    },
+    {
+      "question": "What kind of water body is rumored to be obscuring Genghis Khan's burial site?",
+      "answer": "water stabilisation pond. river",
+      "expected_answer": ["a river", "river", "river"]
+    },
+    {
+      "question": "How else might a physician take advantage of self-interest?",
+      "answer": "automatically dim or turn off lights. irrespective of personal religious beliefs or practices. his governorship would be term - limited. Some predators take advantage of the concentration of birds during migration. If the highest echelons of the governments also take advantage from corruption or embezzlement from the state's treasury",
+      "expected_answer": [
+        "exaggerating their seriousness",
+        "avoiding the unnecessary use of medication that may have side-effects",
+        "because he or she can then sell more medications to the patient"
+      ]
+    },
+    {
+      "question": "What is considered the centerpiece of the Jameel Gallery of Islamic Art?",
+      "answer": "the mosque. The Southampton City Art Gallery. Artspace. The search for a definitive Islamic philosophy separate from Occasionalism. Jinling Stone Gallery",
+      "expected_answer": [
+        "Ardabil Carpet",
+        "the Ardabil Carpet",
+        "Ardabil Carpet"
+      ]
+    },
+    {
+      "question": "What are one of the key cell types of the adaptive immune system?",
+      "answer": "plants and fungi",
+      "expected_answer": ["T cells", "T cells", "T cells"]
+    }
+  ],
+  "model": "tfidf-bert-on-bert-model",
+  "corpus": "squad"
+}

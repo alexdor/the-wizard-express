@@ -1,0 +1,88 @@
+{
+  "answers": [
+    {
+      "question": "What will ensure and create the framework for the Action Plan to work?",
+      "answer": "Cyber Security Strategy",
+      "expected_answer": [
+        "climate will be a central issue in the renewed Medium Term Plan that will be launched in the coming months",
+        "Medium Term Plan",
+        "Medium Term Plan"
+      ]
+    },
+    {
+      "question": "What is the name of Harvard's primary recreational sports facility?",
+      "answer": "Safaga",
+      "expected_answer": [
+        "Malkin Athletic Center",
+        "Malkin Athletic Center",
+        "Malkin Athletic Center"
+      ]
+    },
+    {
+      "question": "Who was the president of UPT in 1951?",
+      "answer": "Leonard Goldenson",
+      "expected_answer": [
+        "Leonard Goldenson",
+        "Leonard Goldenson",
+        "Leonard Goldenson"
+      ]
+    },
+    {
+      "question": "What is it estimated that about half of all variation in homicide rates can be accounted for by?",
+      "answer": "differences in the amount of inequality in each province or state. 197th.. The 2011 Business Software Alliance Piracy Study Standard. 6 %",
+      "expected_answer": [
+        "differences in the amount of inequality",
+        "differences in the amount of inequality",
+        "inequality"
+      ]
+    },
+    {
+      "question": "MHC antigens on normal body cells are recognized by what receptor on NK cells?",
+      "answer": "immunoglobulin receptors",
+      "expected_answer": [
+        "killer cell immunoglobulin receptors (KIR",
+        "killer cell immunoglobulin",
+        "killer cell immunoglobulin receptors (KIR)"
+      ]
+    },
+    {
+      "question": "In Gebhard v Consiglio...Milano, the requirements to be registered in Milan before being able to practice law would be allowed under what conditions?",
+      "answer": "if they were non - discriminatory",
+      "expected_answer": [
+        "if they were non-discriminatory",
+        "if they were non-discriminatory, \"justified by imperative requirements in the general interest\" and proportionately applied",
+        "participate in economic life \"on a stable and continuous basis\""
+      ]
+    },
+    {
+      "question": "How tall was the tower's ultimate height?",
+      "answer": "112 m. 500 feet. 6'2 \"",
+      "expected_answer": ["187 feet", "187 feet", "187 feet (57 m)"]
+    },
+    {
+      "question": "What is this invisible radiant energy now known as?",
+      "answer": "Supercapacitors",
+      "expected_answer": ["X-Rays", "x-rays", "\"Roentgen rays\" or \"X-Rays\""]
+    },
+    {
+      "question": "Which IPCC author criticized the TAR?",
+      "answer": "Richard Lindzen. Crowley & Lowery. Second Assessment Report. John Lawrence Daly",
+      "expected_answer": [
+        "Richard Lindzen",
+        "Richard Lindzen",
+        "Richard Lindzen"
+      ]
+    },
+    {
+      "question": "On which corner is the shopping center located?",
+      "answer": "Broadway and West 31st Street",
+      "expected_answer": [
+        "Fresno and B streets",
+        "Fresno and B streets",
+        "Fresno and B streets"
+      ]
+    }
+  ],
+  "model": "pyserini-bert-on-bert-model",
+  "corpus": "squad"
+}

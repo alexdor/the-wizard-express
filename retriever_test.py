@@ -122,7 +122,7 @@ def main():
                     continue
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
-                        for number_of_docs in [3, 5]:
+                        for number_of_docs in [1, 3, 5]:
                             pri = f"{retriever_class.friendly_name} with {tokenizer_class.friendly_name} on {corpus_class.friendly_name}, vocab size {vocab_size} and validated on {data_to_run_on}"
                             print(f"Started testing {pri}")
                             try:

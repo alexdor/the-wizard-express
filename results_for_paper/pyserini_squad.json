@@ -1,0 +1,59 @@
+[
+  {
+    "date": "22/02/2021 15:50:52",
+    "pretty_results": "Successfully retrieved 7480 out of 10570 documents",
+    "correctly_retrieved_documents": 7480,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 1,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "70.7663197729423 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "pyserini-simple",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:12.474306",
+      "calculation_time": "0:00:12.878521",
+      "total_time": "0:00:25.352827"
+    }
+  },
+  {
+    "date": "22/02/2021 15:51:07",
+    "pretty_results": "Successfully retrieved 8862 out of 10570 documents",
+    "correctly_retrieved_documents": 8862,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 3,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "83.84105960264901 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "pyserini-simple",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:00.914963",
+      "calculation_time": "0:00:13.811619",
+      "total_time": "0:00:14.726582"
+    }
+  },
+  {
+    "date": "22/02/2021 15:51:24",
+    "pretty_results": "Successfully retrieved 9243 out of 10570 documents",
+    "correctly_retrieved_documents": 9243,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 5,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "87.44560075685904 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "pyserini-simple",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:00.923392",
+      "calculation_time": "0:00:15.632539",
+      "total_time": "0:00:16.555931"
+    }
+  }
+]

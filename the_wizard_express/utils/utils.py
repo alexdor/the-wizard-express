@@ -1,5 +1,4 @@
 import sys
-from json import dumps
 from os.path import dirname, join
 from pathlib import Path
 from pickle import HIGHEST_PROTOCOL, dump

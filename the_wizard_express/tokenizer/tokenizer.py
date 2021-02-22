@@ -1,10 +1,12 @@
 from abc import ABC, abstractclassmethod
-from os.path import lexists
+from os.path import dirname, lexists
+from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from tokenizers import Encoding
 from tokenizers import Tokenizer as HuggingFaceTokenizer
 
+from ..config import Config
 from ..corpus.corpus import Corpus
 from ..utils import generate_cache_path
 
@@ -29,6 +31,9 @@ class Tokenizer(ABC):
         """
 
     def _save_tokenizer(self) -> None:
+        Path(dirname(self._tokenizer_path)).mkdir(parents=True, exist_ok=True)
+        if Config.debug:
+            print(f"Saving tokenizer to {self._tokenizer_path}")
         self.tokenizer.save(self._tokenizer_path)
 
     def _load_from_file(self, file: str) -> None:

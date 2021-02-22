@@ -1,0 +1,78 @@
+[
+  {
+    "date": "21/02/2021 05:14:03",
+    "pretty_results": "Successfully retrieved 8889 out of 10570 documents",
+    "correctly_retrieved_documents": 8889,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 3,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "84.0964995269631 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "pyserini-simple",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:01.216599",
+      "calculation_time": "0:00:15.132845",
+      "total_time": "0:00:16.349444"
+    }
+  },
+  {
+    "date": "21/02/2021 05:14:19",
+    "pretty_results": "Successfully retrieved 9273 out of 10570 documents",
+    "correctly_retrieved_documents": 9273,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 5,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "87.7294228949858 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "pyserini-simple",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:00.653643",
+      "calculation_time": "0:00:15.959284",
+      "total_time": "0:00:16.612927"
+    }
+  },
+  {
+    "date": "21/02/2021 05:49:32",
+    "pretty_results": "Successfully retrieved 3675 out of 10570 documents",
+    "correctly_retrieved_documents": 3675,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 3,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "34.7682119205298 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "tfidf",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:00.755975",
+      "calculation_time": "0:35:11.221119",
+      "total_time": "0:35:11.977094"
+    }
+  },
+  {
+    "date": "21/02/2021 06:24:43",
+    "pretty_results": "Successfully retrieved 4488 out of 10570 documents",
+    "correctly_retrieved_documents": 4488,
+    "total_documents": 10570,
+    "number_of_docs_to_retrieve": 5,
+    "data_it_run_on": "validation_data",
+    "correctly_retrieved": "42.459791863765375 %",
+    "extra_info": {
+      "corpus": "squad",
+      "retriever": "tfidf",
+      "tokenizer": "word",
+      "max_vocab_size": 80000,
+      "actual_vocab_size": 77163,
+      "preperation_time": "0:00:01.031563",
+      "calculation_time": "0:35:10.582941",
+      "total_time": "0:35:11.614505"
+    }
+  }
+]

@@ -50,106 +50,56 @@
       "answer": "Prithvi Bir Bikram Shah",
       "expected_answer": "Benny Goodman"
     },
-    ({
-      "question": "Which band released the 1970 album 'In the Wake of Poseidon'?",
-      "answer": "King Crimson... Camel",
-      "expected_answer": "KING CRIMSON"
+    {
+      "question": "Who was the first person after Scott to reach the South Pole overland?",
+      "answer": "Sir Richard Pole",
+      "expected_answer": "Edmond Hillary"
     },
     {
-      "question": "Which play is featured in the film The Producers?",
-      "answer": "The Lost Stooges Tapes",
-      "expected_answer": "Springtime for Hitler"
+      "question": "In which sport is April 15th celebrated as 'Jackie Robinson Day', to remember the day in 1947 when he became the first black player of the modern era?",
+      "answer": "Waterloo Day is 18 June, the date of the Battle of Waterloo, in 1815. jubilee",
+      "expected_answer": "BASEBALL"
     },
     {
-      "question": "Green plover and peewit are alternative names for which British bird?",
-      "answer": "tern",
-      "expected_answer": "Lapwing"
+      "question": "What was the name of David Bowie\u2019s final album released two days before his death?",
+      "answer": "Graveyard of Empires. Two Yanks. Ocean Drive. Prelude",
+      "expected_answer": "BLACKSTAR"
     },
     {
-      "question": "Every major league baseball team has retired the number 42, in honor of what player who was born on January 31, 1919?",
-      "answer": "Babe Ruth. Jordan Rodgers",
-      "expected_answer": "Jackie Robinson"
+      "question": "Which Nobel-prize winning Russian writer died on August 3rd 2008?",
+      "answer": "Harold Pinter Salman Rushdie. Nap or Napoleon",
+      "expected_answer": "Alexander Solzhenitsyn"
     },
     {
-      "question": "In the song \u201cFood, Glorious Food\u201d, which food is mentioned first?",
-      "answer": "",
-      "expected_answer": "Cold Jelly and Custard"
+      "question": "In internet chat room language, what does 'BRB' mean?",
+      "answer": "HyperText Markup Language",
+      "expected_answer": "'BE RIGHT BACK'"
     },
     {
-      "question": "Who, on 23rd July 2009, became the leading Australian batsman, having accumulated more runs in 1st class cricket than the legendary Don Bradman?",
-      "answer": "Viv Richards",
-      "expected_answer": "JUSTIN LANGER"
+      "question": "What sort of game would you be playing if you played 'Spoil five'?",
+      "answer": "dice",
+      "expected_answer": "CARDS"
     },
     {
-      "question": "In which county will you find Fountains abbey and Studley Water Gardens?",
-      "answer": "North Yorkshire Yorkshire",
-      "expected_answer": "North Yorkshire"
+      "question": "What nationality was the pointillist artist MONDRIAN?",
+      "answer": "Brazilian. Japanese",
+      "expected_answer": "DUTCH"
     },
     {
-      "question": "Levi Stubbs was the lead singer of which 'Motown' group from 1953 until 2000?",
-      "answer": "The Four Aims",
-      "expected_answer": "'THE FOUR TOPS'"
+      "question": "How many \u2018E\u2019 tiles are provided in a Scrabble game?",
+      "answer": "two to four seven",
+      "expected_answer": "12"
     },
     {
-      "question": "In business theory which one of these is not normally a 'profit lever'?",
-      "answer": "contract is a voluntary arrangement between two or more parties",
-      "expected_answer": "Time"
+      "question": "Which US folk singer had the words \u201cThis machine kills fascists\u201d written on his guitar?",
+      "answer": "Paris Graham Singer",
+      "expected_answer": "Woody Guthrie"
     },
     {
-      "question": "Opened by Sir Ranulph Fiennes, The Drumnadrochit Hotel situated in the Scottish Highlands is a tourist attraction that centres on which famous Scottish figure ?",
-      "answer": "John Knox",
-      "expected_answer": "LOCH NESS MONSTER"
-    },
-    {
-      "question": "In medicine the MMR vaccination gives protection against which diseases?",
-      "answer": "measles, mumps, and rubella",
-      "expected_answer": "Measles, Mumps and Rubella"
-    },
-    {
-      "question": "Of what family are Onion, garlic, shallot, leek and chive?",
-      "answer": "what family",
-      "expected_answer": "Allium"
-    },
-    {
-      "question": "Maine Coon, Munchkin, Oriental Shorthair, Persian, Ragamuffin, Russian Blue, Siamese, Siberian, Snowshoe, Sphynx, Tonkinese and Manx are all breeds of what?",
-      "answer": "what",
-      "expected_answer": "Cat"
-    },
-    {
-      "question": "Which famous city has the official website domain www.mcgm.gov.in?",
-      "answer": "London",
-      "expected_answer": "Mumbai"
-    },
-    {
-      "question": "Wardenclyffe Tower in Shoreham, New York was designed by which genius who intended to showcase it for demonstrations of wireless power transmission?",
-      "answer": "Guglielmo Marconi",
-      "expected_answer": "Nikola Tesla"
-    },
-    {
-      "question": "The Livadia Palace near which Crimean city was the site of a 1945 Peace Conference?",
-      "answer": "Yalta",
-      "expected_answer": "YALTA"
-    },
-    {
-      "question": "New Britain and New Ireland are two of the islands that make up which country?",
-      "answer": "United States New Ireland United Kingdom New Ireland",
-      "expected_answer": "PAPUA NEW GUINEA"
-    },
-    {
-      "question": "Which metal is added to steel to produce stainless steel?",
-      "answer": "aluminium",
-      "expected_answer": "Chromium"
-    },
-    {
-      "question": "Porcupine grass is also known as what?",
-      "answer": "A Caribou",
-      "expected_answer": "Zebra grass"
-    },
-    {
-      "question": "What was the main character trait of the Dickens character Mr Micawber?",
-      "answer": "Mr. Hunter is a docile",
-      "expected_answer": "Optimism"
-    })
+      "question": "In the UK television series \u2018Absolutely Fabulous\u2019, what is Edina\u2019s surname?",
+      "answer": "Doctor Who. Terri",
+      "expected_answer": "Monsoon"
+    }
   ],
   "model": "tfidf-bert-on-bert-model",
   "corpus": "triviaqa"

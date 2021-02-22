@@ -117,9 +117,10 @@ def main():
         for vocab_size in vocab_sizes:
             Config.vocab_size = vocab_size
             for retriever_class in retrievers:
-                # PyseriniSimple doesn't have a vocab size, so we can just skip
-                if isinstance(retriever_class, PyseriniSimple) and pyserini_run:
-                    continue
+                for tokenizer_class in tokenizers:
+                    # PyseriniSimple doesn't have a vocab size, so we can just skip
+                    if retriever_class is PyseriniSimple and pyserini_run:
+                        continue
                 for tokenizer_class in tokenizers:
                     for data_to_run_on in find_data_to_run_on(corpus_class):
                         for number_of_docs in [1, 3, 5]:
@@ -147,8 +148,8 @@ def main():
                             print(f"Finished testing {pri}")
                             print("------" * 4, "\n")
                             gc.collect()
-                if isinstance(retriever_class, PyseriniSimple):
-                    pyserini_run = True
+                        if retriever_class is PyseriniSimple:
+                            pyserini_run = True
         gc.collect()
 
 

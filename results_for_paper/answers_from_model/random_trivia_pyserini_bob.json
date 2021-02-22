@@ -49,6 +49,56 @@
       "question": "Opened by Sir Ranulph Fiennes, The Drumnadrochit Hotel situated in the Scottish Highlands is a tourist attraction that centres on which famous Scottish figure ?",
       "answer": "John Knox",
       "expected_answer": "LOCH NESS MONSTER"
+    },
+    {
+      "question": "In medicine the MMR vaccination gives protection against which diseases?",
+      "answer": "measles, mumps, and rubella",
+      "expected_answer": "Measles, Mumps and Rubella"
+    },
+    {
+      "question": "Of what family are Onion, garlic, shallot, leek and chive?",
+      "answer": "what family",
+      "expected_answer": "Allium"
+    },
+    {
+      "question": "Maine Coon, Munchkin, Oriental Shorthair, Persian, Ragamuffin, Russian Blue, Siamese, Siberian, Snowshoe, Sphynx, Tonkinese and Manx are all breeds of what?",
+      "answer": "what",
+      "expected_answer": "Cat"
+    },
+    {
+      "question": "Which famous city has the official website domain www.mcgm.gov.in?",
+      "answer": "London",
+      "expected_answer": "Mumbai"
+    },
+    {
+      "question": "Wardenclyffe Tower in Shoreham, New York was designed by which genius who intended to showcase it for demonstrations of wireless power transmission?",
+      "answer": "Guglielmo Marconi",
+      "expected_answer": "Nikola Tesla"
+    },
+    {
+      "question": "The Livadia Palace near which Crimean city was the site of a 1945 Peace Conference?",
+      "answer": "Yalta",
+      "expected_answer": "YALTA"
+    },
+    {
+      "question": "New Britain and New Ireland are two of the islands that make up which country?",
+      "answer": "United States New Ireland United Kingdom New Ireland",
+      "expected_answer": "PAPUA NEW GUINEA"
+    },
+    {
+      "question": "Which metal is added to steel to produce stainless steel?",
+      "answer": "aluminium",
+      "expected_answer": "Chromium"
+    },
+    {
+      "question": "Porcupine grass is also known as what?",
+      "answer": "A Caribou",
+      "expected_answer": "Zebra grass"
+    },
+    {
+      "question": "What was the main character trait of the Dickens character Mr Micawber?",
+      "answer": "Mr. Hunter is a docile",
+      "expected_answer": "Optimism"
     }
   ],
   "model": "pyserini-bert-on-bert-model",

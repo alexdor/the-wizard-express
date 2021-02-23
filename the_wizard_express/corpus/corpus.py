@@ -8,7 +8,6 @@ from pickle import load
 from typing import List, Tuple, Union
 
 from datasets import Dataset
-from numpy import sort, unique
 from pyarrow import StringArray, array
 from torch.utils.data import Dataset as TorchDataset
 

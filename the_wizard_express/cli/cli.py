@@ -1,4 +1,5 @@
 """Console script for the_wizard_express."""
+import random
 import sys
 from datetime import datetime, timedelta
 from json import dumps
@@ -7,14 +8,12 @@ from typing import Any, Callable, List, Tuple, Union
 
 import click
 from datasets import load_metric
-from datasets.arrow_dataset import concatenate_datasets
 from tqdm import tqdm
 
 from ..config import Config
 from ..corpus import Corpus, Squad, SquadV2, TriviaQA
 from ..language_model import DistilBertForQA, get_trainer
 from ..qa import PyseriniBertOnBert, QAModel, TFIDFBertOnBert
-from ..retriever import PyseriniSimple
 
 
 def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
@@ -46,11 +45,11 @@ def main(debug, max_proc, data_to_keep, vocab_size):
 
 @main.command()
 def train():
-    skip_training = False
+    skip_training = True
     squad_v2 = False
     train_start_time = timer()
-    distilled_bert = DistilBertForQA(skip_training)
-    squad = SquadV2(distilled_bert.tokenizer, v1=not squad_v2)
+    distilled_bert = DistilBertForQA()
+    squad = TriviaQA(True, distilled_bert.tokenizer, v1=not squad_v2)
     dataset = squad.get_dataset()
     dataset["train"] = dataset["train"].map(
         squad.prepare_train_features,
@@ -136,6 +135,7 @@ def train():
 models = option_to_type((PyseriniBertOnBert, TFIDFBertOnBert))
 corpuses = option_to_type((Squad, TriviaQA))
 
+
 # TODO: Update click options to use common func
 
 
@@ -159,6 +159,7 @@ def run_squad_validation(model: QAModel, corpus: Corpus):
     model_instance = model(corpus_instance)
     dataset = corpus_instance.get_dataset()
     metric_start_time = timer()
+
     formatted_predictions = [
         {"id": data["id"], "prediction_text": model_instance.answer_question(question)}
         for data in tqdm(dataset["validation"])
@@ -205,102 +206,6 @@ def run_squad_validation(model: QAModel, corpus: Corpus):
                 indent=2,
             )
         )
-
-
-@main.command()
-def train_wiki():
-    train_start_time = timer()
-    distilled_bert = DistilBertForQA()
-    squad = SquadV2(distilled_bert.tokenizer, v1=True)
-    trivia = TriviaQA(return_raw=True).get_dataset()
-    dataset = concatenate_datasets([squad.get_dataset(), trivia.get_dataset()])
-    dataset = dataset.map(
-        squad.prepare_train_features,
-        batched=True,
-        remove_columns=dataset["train"].column_names,
-        num_proc=Config.max_proc_to_use,
-    )
-    trainer = get_trainer(
-        distilled_bert.model,
-        dataset["train"],
-        dataset["validation"],
-        output_dir="./results_wiki",
-        logging_dir="./logs_with_wiki",
-    )
-    trainer.train()
-    trainer.save_model(distilled_bert.friendly_name)
-    metric_start_time = timer()
-    validation_features = dataset["validation"].map(
-        squad.prepare_validation_features,
-        batched=True,
-        remove_columns=dataset["validation"].column_names,
-        num_proc=Config.max_proc_to_use,
-    )
-
-    raw_predictions = trainer.predict(validation_features)
-    final_predictions = squad.postprocess_qa_predictions(
-        dataset["validation"], validation_features, raw_predictions.predictions
-    )
-
-    metric = load_metric(
-        "squad_v2",
-        cache_dir=Config.hugging_face_cache_dir,
-    )
-    formatted_predictions = [
-        {"id": k, "prediction_text": v, "no_answer_probability": 0.0}
-        for k, v in final_predictions.items()
-    ]
-
-    references = [
-        {"id": ex["id"], "answers": ex["answers"]} for ex in dataset["validation"]
-    ]
-
-    final_metrics = metric.compute(
-        predictions=formatted_predictions, references=references
-    )
-    metric_end_time = timer()
-    with open("./results_for_paper/distilled-bert-with-wiki.json", "a+") as file:
-        file.write(
-            dumps(
-                {
-                    "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "metrics": final_metrics,
-                    "extra_info": {
-                        "corpus": squad.friendly_name,
-                        "model": distilled_bert.friendly_name,
-                        "max_vocab_size": Config.vocab_size,
-                        "total_time": str(
-                            timedelta(seconds=metric_end_time - train_start_time)
-                        ),
-                        "training_time": str(
-                            timedelta(seconds=metric_start_time - train_start_time)
-                        ),
-                        "metric_computation_time": str(
-                            timedelta(seconds=metric_end_time - metric_start_time)
-                        ),
-                    },
-                },
-                indent=2,
-            )
-        )
-
-
-# @main.command()
-# def train2():
-#     corpus = TriviaQA()
-#     tokenizer = WordTokenizer(corpus=corpus)
-#     retriever = TFIDFRetriever(corpus=corpus, tokenizer=tokenizer)
-#     reader_tokenizer = AutoTokenizer.from_pretrained(
-#         StackedBert.model,
-#         use_fast=True,
-#         cache_dir=Config.hugging_face_cache_dir,
-#     )
-#     model = StackedBert(reader_tokenizer)
-
-#     args = {
-#         "train_dataset": corpus.get_train_ready_data(retriever, reader_tokenizer),
-#         "eval_dataset": corpus.get_eval_ready_data(retriever, reader_tokenizer),
-#     }
 
 
 @main.command()
@@ -354,14 +259,71 @@ def evaluate_metrics():
 
 
 @main.command()
-def pyserini():
-    corpus = TriviaQA()
-    corpus.get_train_data()
-    corpus.get_validation_data()
-    corpus.corpus
-    pyser = PyseriniSimple(corpus=corpus, tokenizer=None)
-    pyser.retrieve_docs("Fuck you", 5)
-    print(pyser)
+@click.option(
+    "--model",
+    type=click.Choice([item[0] for item in models], case_sensitive=False),
+    default=models[0][0],
+    callback=turn_user_selection_to_class(models),
+)
+@click.option(
+    "--corpus",
+    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
+    default=corpuses[0][0],
+    callback=turn_user_selection_to_class(corpuses),
+)
+def random_answers(model: QAModel, corpus: Corpus):
+    """This command allows the user to directly pass a question to the model and shows the final prediction."""
+    corpus_instance = corpus(return_raw=True) if corpus is TriviaQA else corpus()
+    model_instance = model(corpus_instance)
+    data = corpus_instance.get_validation_data()
+    answers = [
+        {
+            "question": data[i]["question"],
+            "answer": model_instance.answer_question(data[i]["question"]),
+            "expected_answer": data[i]["answer"]["text"]
+            if corpus is Squad
+            else data[i]["answer"],
+        }
+        for i in random.sample(range(len(data)), 10)
+    ]
+    with open("./results_for_paper/random.txt", "a+") as file:
+        file.write(
+            dumps(
+                {
+                    "answers": answers,
+                    "model": model_instance.friendly_name,
+                    "corpus": corpus_instance.friendly_name,
+                },
+                indent=2,
+            )
+        )
+
+
+@main.command()
+@click.option(
+    "--model",
+    type=click.Choice([item[0] for item in models], case_sensitive=False),
+    default=models[0][0],
+    callback=turn_user_selection_to_class(models),
+)
+@click.option(
+    "--corpus",
+    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
+    default=corpuses[0][0],
+    callback=turn_user_selection_to_class(corpuses),
+)
+@click.argument("question", required=True, type=str)
+def answer(model: QAModel, corpus: Corpus, question: str):
+    """This command allows the user to directly pass a question to the model and shows the final prediction."""
+    corpus_instance = corpus(return_raw=True) if corpus is TriviaQA else corpus()
+    model_instance = model(corpus_instance)
+
+    print(model_instance.answer_question(question))
+
+
+@main.command()
+def start_webserver():
+    pass
 
 
 if __name__ == "__main__":

@@ -1685,7 +1685,7 @@ jeepney = ">=0.6"
 [[package]]
 name = "setoptconf"
 version = "0.2.0"
-description = "A module for retrieving program settings from various sources in a consistant method."
+description = "A module for retrieving program settings from various sources in a consistent method."
 category = "dev"
 optional = false
 python-versions = "*"

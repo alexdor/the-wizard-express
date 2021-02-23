@@ -4,7 +4,6 @@ import sys
 from datetime import datetime, timedelta
 from json import dumps
 from timeit import default_timer as timer
-from typing import Any, Callable, List, Tuple, Union
 
 import click
 from datasets import load_metric
@@ -16,14 +15,22 @@ from ..language_model import DistilBertForQA, get_trainer
 from ..qa import PyseriniBertOnBert, QAModel, TFIDFBertOnBert
 
 
-def turn_user_selection_to_class(possible_values) -> Callable[[Any, str], Any]:
-    return lambda _, selection: next(
-        (values[1] for values in possible_values if values[0] == selection), None
-    )
+def create_click_args(classes):
+    """Helper function to convert a list of classes into click selections"""
+    classes = [(obj.friendly_name, obj) for obj in classes]
+    return {
+        "type": click.Choice([item[0] for item in classes], case_sensitive=False),
+        "default": classes[0][0],
+        # Get user input and return the corespoding class
+        "callback": lambda _, selection: next(
+            (values[1] for values in classes if values[0] == selection), None
+        ),
+    }
 
 
-def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
-    return [(obj.friendly_name, obj) for obj in objects]
+models = (PyseriniBertOnBert, TFIDFBertOnBert)
+
+corpuses = (Squad, TriviaQA)
 
 
 @click.group()
@@ -132,26 +139,9 @@ def train():
         )
 
 
-models = option_to_type((PyseriniBertOnBert, TFIDFBertOnBert))
-corpuses = option_to_type((Squad, TriviaQA))
-
-
-# TODO: Update click options to use common func
-
-
 @main.command()
-@click.option(
-    "--model",
-    type=click.Choice([item[0] for item in models], case_sensitive=False),
-    default=models[0][0],
-    callback=turn_user_selection_to_class(models),
-)
-@click.option(
-    "--corpus",
-    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
-    default=corpuses[0][0],
-    callback=turn_user_selection_to_class(corpuses),
-)
+@click.option("--model", **create_click_args(models))
+@click.option("--corpus", **create_click_args(corpuses))
 def run_squad_validation(model: QAModel, corpus: Corpus):
     squad_v2 = False
     metric_prep_time = timer()
@@ -259,18 +249,8 @@ def evaluate_metrics():
 
 
 @main.command()
-@click.option(
-    "--model",
-    type=click.Choice([item[0] for item in models], case_sensitive=False),
-    default=models[0][0],
-    callback=turn_user_selection_to_class(models),
-)
-@click.option(
-    "--corpus",
-    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
-    default=corpuses[0][0],
-    callback=turn_user_selection_to_class(corpuses),
-)
+@click.option("--model", **create_click_args(models))
+@click.option("--corpus", **create_click_args(corpuses))
 def random_answers(model: QAModel, corpus: Corpus):
     """This command allows the user to directly pass a question to the model and shows the final prediction."""
     corpus_instance = corpus(return_raw=True) if corpus is TriviaQA else corpus()
@@ -300,18 +280,8 @@ def random_answers(model: QAModel, corpus: Corpus):
 
 
 @main.command()
-@click.option(
-    "--model",
-    type=click.Choice([item[0] for item in models], case_sensitive=False),
-    default=models[0][0],
-    callback=turn_user_selection_to_class(models),
-)
-@click.option(
-    "--corpus",
-    type=click.Choice([item[0] for item in corpuses], case_sensitive=False),
-    default=corpuses[0][0],
-    callback=turn_user_selection_to_class(corpuses),
-)
+@click.option("--model", **create_click_args(models))
+@click.option("--corpus", **create_click_args(corpuses))
 @click.argument("question", required=True, type=str)
 def answer(model: QAModel, corpus: Corpus, question: str):
     """This command allows the user to directly pass a question to the model and shows the final prediction."""

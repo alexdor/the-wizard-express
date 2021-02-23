@@ -1,4 +1,5 @@
 from os import environ
+from typing import Any, Callable, List, Tuple, Union
 
 import click
 
@@ -7,7 +8,12 @@ from ..reader import BertOnBertReader, SimpleBertReader, TinyBertReader
 from ..retriever import PyseriniSimple, TFIDFRetriever
 from ..tokenizer import WordTokenizer, WordTokenizerWithoutStopWords
 from . import main
-from .cli import option_to_type, turn_user_selection_to_class
+from .cli import turn_user_selection_to_class
+
+
+def option_to_type(objects: Union[Tuple[Any, ...], List[Any]]):
+    return [(obj.friendly_name, obj) for obj in objects]
+
 
 retrievers = option_to_type([TFIDFRetriever])
 readers = option_to_type((BertOnBertReader, TinyBertReader, SimpleBertReader))

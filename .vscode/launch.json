@@ -61,5 +61,16 @@
         "run-squad-validation"
       ]
     },
+    {
+      "name": "Run ",
+      "type": "python",
+      "request": "launch",
+      "module": "the_wizard_express",
+      "args": [
+        "random-answers",
+        "--corpus",
+        "triviaqa"
+      ]
+    },
   ]
 }

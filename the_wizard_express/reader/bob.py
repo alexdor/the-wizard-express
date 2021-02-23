@@ -27,9 +27,11 @@ class BertOnBertReader(Reader):
         return self._build()
 
     def answer(self, question: str, documents: Iterator[str]) -> str:
-        answers = (
+        answers = [
             self._get_partial_answer(question, document) for document in documents
-        )
+        ]
+        if len(answers) == 1:
+            return answers[0]
         return self._get_partial_answer(question, ". ".join(answers))
 
     @lru_cache(256)

@@ -2,6 +2,7 @@ from abc import ABC, abstractclassmethod
 from os.path import lexists
 from typing import Iterator
 
+from ..config import Config
 from ..tokenizer import Tokenizer
 from ..utils import generate_cache_path
 
@@ -23,10 +24,9 @@ class Reader(ABC):
         if lexists(self._reader_path):
             self._load_from_file()
             return
-        print(f"Building {self.friendly_name} reader")
+        if Config.debug:
+            print(f"Building {self.friendly_name} reader")
         self._build()
-        # TODO
-        #  pickle_and_save_to_file(self.model, self._reader_path)
 
     @abstractclassmethod
     def answer(self, question: str, documents: Iterator[str]) -> str:

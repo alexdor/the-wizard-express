@@ -25,6 +25,7 @@ class DistilBertForQA:
                 f"./{self.friendly_name}",
                 cache_dir=Config.hugging_face_cache_dir,
             )
+            return
 
         self.model = DistilBertForQuestionAnswering.from_pretrained(
             self.model_name, cache_dir=Config.hugging_face_cache_dir

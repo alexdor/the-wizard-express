@@ -4,9 +4,11 @@ import sys
 from datetime import datetime, timedelta
 from json import dumps
 from timeit import default_timer as timer
+from typing import Optional
 
 import click
 from datasets import load_metric
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 
 from ..config import Config
@@ -142,35 +144,64 @@ def train():
 @main.command()
 @click.option("--model", **create_click_args(models))
 @click.option("--corpus", **create_click_args(corpuses))
-def run_squad_validation(model: QAModel, corpus: Corpus):
+@click.option("--gpu", type=int, default=None)
+def run_squad_validation(model: QAModel, corpus: Corpus, gpu: Optional[int]):
     squad_v2 = False
     metric_prep_time = timer()
     corpus_instance = corpus(return_raw=True) if corpus is TriviaQA else corpus()
-    model_instance = model(corpus_instance)
-    dataset = corpus_instance.get_dataset()
+    model_instance = model(corpus_instance, gpu=gpu)
+    validation_data = corpus_instance.get_validation_data()
     metric_start_time = timer()
 
-    formatted_predictions = [
-        {"id": data["id"], "prediction_text": model_instance.answer_question(question)}
-        for data in tqdm(dataset["validation"])
-        for question in (
-            data["question"]
-            if isinstance(data["question"], list)
-            else [data["question"]]
+    if corpus is TriviaQA:
+        answers = [
+            model_instance.answer_question(ex["question"])
+            for ex in tqdm(validation_data)
+        ]
+        count = sum(
+            int(answers[i].lower() == ex["answer"].lower())
+            for i, ex in tqdm(enumerate(validation_data))
         )
-    ]
-    metric = load_metric(
-        "squad_v2" if squad_v2 else "squad",
-        cache_dir=Config.hugging_face_cache_dir,
-    )
+        final_metrics = {"exact_match_custom": f"{count/float(len(validation_data))}%"}
+        print(final_metrics)
 
-    references = [
-        {"id": ex["id"], "answers": ex["answers"]} for ex in dataset["validation"]
-    ]
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            validation_data["answer"], answers, average="micro"
+        )
+        final_metrics["precision"] = precision
+        final_metrics["recall"] = recall
+        final_metrics[" f1"] = f1
+    else:
 
-    final_metrics = metric.compute(
-        predictions=formatted_predictions, references=references
-    )
+        formatted_predictions = [
+            {
+                "id": data["id"],
+                "prediction_text": model_instance.answer_question(question),
+            }
+            for data in tqdm(validation_data)
+            for question in (
+                data["question"]
+                if isinstance(data["question"], list)
+                else [data["question"]]
+            )
+        ]
+
+        metric = load_metric(
+            "squad_v2" if squad_v2 else "squad",
+            cache_dir=Config.hugging_face_cache_dir,
+        )
+
+        references = [
+            {
+                "id": ex["id"],
+                "answers": ex["answers"],
+            }
+            for ex in validation_data
+        ]
+
+        final_metrics = metric.compute(
+            predictions=formatted_predictions, references=references
+        )
     metric_end_time = timer()
     with open(f"./results_for_paper/{model.friendly_name}.json", "a+") as file:
         file.write(
@@ -243,9 +274,6 @@ def evaluate_metrics():
                 indent=2,
             )
         )
-
-    #
-    # TFIDFBertSimple
 
 
 @main.command()

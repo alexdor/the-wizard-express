@@ -53,7 +53,7 @@ class _Config:
     cls_token = "[CLS]"
     mask_token = "[MASK]"
     doc_stride = 128
-    max_seq_len = 384
+    max_seq_len = 512
 
     @property
     def special_tokens_list(self) -> List[str]:

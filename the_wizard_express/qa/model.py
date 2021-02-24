@@ -1,6 +1,8 @@
 from abc import ABC
 from functools import lru_cache
+from json import dumps
 
+from torch.cuda import is_available
 from transformers import AutoTokenizer
 
 from ..config import Config
@@ -24,6 +26,7 @@ class QAModel(ABC):
         corpus: Corpus,
         retriever: Retriever,
         retriever_tokenizer: Tokenizer,
+        gpu=None,
     ) -> None:
         self.retriever = retriever(
             corpus=corpus,
@@ -31,7 +34,10 @@ class QAModel(ABC):
             if retriever_tokenizer is not None
             else None,
         )
-        self.reader = reader(tokenizer=reader_tokenizer)
+
+        self.reader = reader(
+            tokenizer=reader_tokenizer, device=f"cuda:{gpu}" if gpu else "cpu"
+        )
 
     @lru_cache(128)
     def answer_question(self, question: str) -> str:
@@ -46,7 +52,7 @@ class QAModel(ABC):
 class TFIDFBertOnBert(QAModel):
     friendly_name = "tfidf-bert-on-bert-model"
 
-    def __init__(self, corpus) -> None:
+    def __init__(self, corpus, gpu) -> None:
         args = {
             "retriever": TFIDFRetriever,
             "retriever_tokenizer": WordTokenizer,
@@ -57,6 +63,7 @@ class TFIDFBertOnBert(QAModel):
                 cache_dir=Config.hugging_face_cache_dir,
             ),
             "corpus": corpus,
+            "gpu": gpu,
         }
         super().__init__(**args)
 
@@ -64,7 +71,7 @@ class TFIDFBertOnBert(QAModel):
 class PyseriniBertOnBert(QAModel):
     friendly_name = "pyserini-bert-on-bert-model"
 
-    def __init__(self, corpus) -> None:
+    def __init__(self, corpus, gpu) -> None:
         args = {
             "retriever": PyseriniSimple,
             "retriever_tokenizer": None,
@@ -75,6 +82,7 @@ class PyseriniBertOnBert(QAModel):
                 cache_dir=Config.hugging_face_cache_dir,
             ),
             "corpus": corpus,
+            "gpu": gpu,
         }
         super().__init__(**args)
 
@@ -82,7 +90,7 @@ class PyseriniBertOnBert(QAModel):
 class TFIDFBertSimple(QAModel):
     friendly_name = "tfidf-bert-simple-model"
 
-    def __init__(self, corpus) -> None:
+    def __init__(self, corpus, gpu) -> None:
         args = {
             "retriever": TFIDFRetriever,
             "retriever_tokenizer": WordTokenizer,
@@ -93,5 +101,6 @@ class TFIDFBertSimple(QAModel):
                 cache_dir=Config.hugging_face_cache_dir,
             ),
             "corpus": corpus,
+            "gpu": gpu,
         }
         super().__init__(**args)

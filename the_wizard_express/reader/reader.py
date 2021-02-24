@@ -12,7 +12,8 @@ class Reader(ABC):
     Abstract class for all the readers
     """
 
-    def __init__(self, tokenizer: Tokenizer) -> None:
+    def __init__(self, tokenizer: Tokenizer, device="cpu") -> None:
+        self.device = device
         self.tokenizer = tokenizer
         self._reader_path = generate_cache_path(
             "reader",

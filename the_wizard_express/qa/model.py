@@ -52,7 +52,7 @@ class QAModel(ABC):
 class TFIDFBertOnBert(QAModel):
     friendly_name = "tfidf-bert-on-bert-model"
 
-    def __init__(self, corpus, gpu) -> None:
+    def __init__(self, corpus, gpu=None) -> None:
         args = {
             "retriever": TFIDFRetriever,
             "retriever_tokenizer": WordTokenizer,
@@ -71,7 +71,7 @@ class TFIDFBertOnBert(QAModel):
 class PyseriniBertOnBert(QAModel):
     friendly_name = "pyserini-bert-on-bert-model"
 
-    def __init__(self, corpus, gpu) -> None:
+    def __init__(self, corpus, gpu=None) -> None:
         args = {
             "retriever": PyseriniSimple,
             "retriever_tokenizer": None,
@@ -90,7 +90,7 @@ class PyseriniBertOnBert(QAModel):
 class TFIDFBertSimple(QAModel):
     friendly_name = "tfidf-bert-simple-model"
 
-    def __init__(self, corpus, gpu) -> None:
+    def __init__(self, corpus, gpu=None) -> None:
         args = {
             "retriever": TFIDFRetriever,
             "retriever_tokenizer": WordTokenizer,

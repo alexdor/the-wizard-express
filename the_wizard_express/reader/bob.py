@@ -54,6 +54,7 @@ class BertOnBertReader(Reader):
         ).to(self.device)
         model_inputs.pop("overflow_to_sample_mapping", None)
         cls_token_id = tensor(self.tokenizer.cls_token_id, device=self.device)
+        answer: List[str] = []
         for input_ids, attention_mask in zip(
             split(model_inputs["input_ids"], 12),
             split(model_inputs["attention_mask"], 12),
@@ -62,7 +63,6 @@ class BertOnBertReader(Reader):
             # chunk
             answer_start = output.start_logits.argmax(dim=-1)
             answer_end = output.end_logits.argmax(dim=-1) + 1
-            answer: List[str] = []
 
             for i in range(len(output.start_logits)):
                 partial_answer = input_ids[i][answer_start[i] : answer_end[i]]
@@ -76,18 +76,17 @@ class BertOnBertReader(Reader):
                         partial_answer, skip_special_tokens=True
                     )
                 )
-                if partial_answer[0][:2] == "##":
-                    # # Drop whitespace from the previous word
-                    # answer = answer[:-1]
-                    # # Drop the ## which indicates a subword
-                    # partial_answer = partial_answer[2:]
+                if partial_answer[:2] == "##":
+                    # Don't add partial answer if we don't have an answer already
                     if not answer:
                         continue
+                    # Add partial answer to the end of the previous answer
                     answer[-1] += partial_answer[2:]
+                # Don't append the same answer twice
                 if not answer or answer[-1] != partial_answer:
-                    answer += partial_answer
+                    answer.append(partial_answer)
         # Drop whitespace from beginning and end
-        return " ".join(self.tokenizer.convert_tokens_to_string(answer)).strip()
+        return " ".join(answer).strip()
 
 
 class SimpleBertReader(BertOnBertReader):

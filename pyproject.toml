@@ -42,6 +42,8 @@ pyserini = "<0.11.0"
 pysimdjson = "^3.2.0"
 tqdm = "<4.50.0"
 pyarrow = "<3.0.0"
+fastapi = {extras = ["all"], version = "^0.63.0"}
+fastapi-cache2 = "^0.1.3"
 
 
 [tool.poetry.dev-dependencies]

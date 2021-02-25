@@ -100,3 +100,14 @@ run: ## execute cli
 
 command: ## execute a specific command by passing the command argument
 	poetry run python -m the_wizard_express $(command)
+
+# api:
+# 	poetry run uvicorn the_wizard_express.api:app --host 0.0.0.0 --port 5000
+
+
+api:
+	poetry run uvicorn the_wizard_express.api:app --host 0.0.0.0 --port 5000
+
+
+devapi:
+	poetry run uvicorn the_wizard_express.api:app --host 0.0.0.0 --port 5000  --reload

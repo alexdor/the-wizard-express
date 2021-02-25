@@ -3,6 +3,9 @@
   import { apiURL } from "../conf.js";
 
   let question = "";
+  let tfIDF = false;
+  let trivia = false;
+  let supDocs = false;
   let answer;
   let error;
   let loading;
@@ -19,7 +22,12 @@
       },
       redirect: "follow",
       referrerPolicy: "no-referrer",
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({
+        question,
+        use_tf_idf: tfIDF,
+        use_trivia: trivia,
+        return_supported_docs: supDocs,
+      }),
     })
       .then((r) => r.json())
       .then((res) => {
@@ -41,6 +49,15 @@
     <input type="text" bind:value={question} placeholder="Type your question" />
     <Button type="submit" onClick={getAnswer}>Ask me</Button>
   </div>
+  <label>
+    <input type="checkbox" bind:checked={tfIDF} /> Use TF-IDF retriever
+  </label>
+  <label>
+    <input type="checkbox" bind:checked={trivia} /> Use Trivia corpus
+  </label>
+  <!-- <label>
+    <input type="checkbox" bind:checked={supDocs} /> Use TF-IDF retriever
+  </label> -->
 </form>
 {#if loading}
   <p class="answer">BoB is typing...</p>
@@ -87,5 +104,6 @@
   form {
     display: flex;
     justify-content: center;
+    flex-direction: column;
   }
 </style>

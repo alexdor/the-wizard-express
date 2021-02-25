@@ -5,7 +5,7 @@
 
   let error;
   let operational;
-  let done = 2;
+  let done = 0;
   let start = false;
 
   if (typeof window !== "undefined") {

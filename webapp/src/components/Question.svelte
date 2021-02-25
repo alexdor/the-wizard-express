@@ -100,6 +100,8 @@
     margin-top: 1em;
     margin-bottom: 1em;
     display: flex;
+    margin-left: auto;
+    margin-right: auto;
   }
   form {
     display: flex;

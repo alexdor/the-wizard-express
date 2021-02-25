@@ -23,7 +23,6 @@ class TFIDFRetriever(Retriever):
     friendly_name = "tfidf"
     _file_ending = ".npz"
 
-    @lru_cache(256)
     def retrieve_docs(self, question: str, number_of_docs: int) -> Iterator[str]:
         encoded_question = self.tokenizer.encode(question)
 

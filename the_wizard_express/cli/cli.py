@@ -8,11 +8,11 @@ from typing import Optional
 
 import click
 from datasets import load_metric
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support
 from tqdm import tqdm
 
 from ..config import Config
-from ..corpus import Corpus, Squad, SquadV2, TriviaQA
+from ..corpus import Corpus, Squad, TriviaQA
 from ..language_model import DistilBertForQA, get_trainer
 from ..qa import PyseriniBertOnBert, QAModel, TFIDFBertOnBert
 
@@ -321,7 +321,7 @@ def answer(model: QAModel, corpus: Corpus, question: str):
 
 @main.command()
 def start_webserver():
-    pass
+    return main()
 
 
 if __name__ == "__main__":

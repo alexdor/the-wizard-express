@@ -15,12 +15,14 @@
         "Content-Type": "application/json",
       },
       redirect: "follow",
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      referrerPolicy: "no-referrer",
       body: JSON.stringify({ question }),
     })
       .then((r) => r.json())
       .then((res) => {
-        console.log(res);
+        if (!res.answer) {
+          res.answer = "Hm... Seems like I have nothing to say to that";
+        }
         answer = res;
       })
       .catch((e) => {

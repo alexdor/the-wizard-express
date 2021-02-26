@@ -1,5 +1,6 @@
 <script lang="ts">
   import Typewriter from "svelte-typewriter/lib/Typewriter.svelte";
+  import Button from "../components/Button.svelte";
   import Question from "../components/Question.svelte";
   import { apiURL } from "../conf.js";
 
@@ -26,8 +27,8 @@
 </svelte:head>
 
 <Typewriter
-  interval={65}
-  on:done|once={() => {
+  interval={75}
+  on:done={() => {
     done = 1;
   }}
 >
@@ -37,7 +38,7 @@
 {#if done}
   {#if operational}
     <Typewriter
-      interval={50}
+      interval={70}
       on:done={() => {
         done = 2;
       }}
@@ -45,7 +46,7 @@
       <p>I'm online and operational, should we start?</p></Typewriter
     >
     {#if done == 2 && !start}
-      <button on:click|once={() => (start = true)}>Start</button>
+      <Button onClick={() => (start = true)}>Start</Button>
     {/if}
   {:else if error}
     <span

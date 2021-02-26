@@ -23,4 +23,8 @@
     text-align: center;
     min-height: 100vh;
   }
+
+  div {
+    min-height: 300px;
+  }
 </style>
